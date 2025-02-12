@@ -1,7 +1,7 @@
 # Проект «Большое путешествие»
 
 * Студент: [Vladislav Kazmin](https://up.htmlacademy.ru/ecmascript-individual/2/user/1779445).
-* Наставник: `Неизвестно`.
+* Наставник: [David Chachanov](https://htmlacademy.ru/profile/id2355549).
 
 ---
 
