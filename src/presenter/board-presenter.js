@@ -9,10 +9,10 @@ import { render } from '../render.js';
 
 
 export default class BoardPresenter {
-  constructor({headerContainer, mainContainer, contolsFilter}){
+  constructor({headerContainer, mainContainer, contolsFilter: controlsFilter}){
     this.headerContainer = headerContainer;
     this.mainContainer = mainContainer;
-    this.contolsFilter = contolsFilter;
+    this.contolsFilter = controlsFilter;
   }
 
   init() {
