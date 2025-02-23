@@ -1,4 +1,6 @@
 import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+dayjs.extend(duration); // Расширяем dayjs плагином
 
 function getRandomArrayElement(items) {
   return items[Math.floor(Math.random() * items.length)];
@@ -14,15 +16,19 @@ function getDateFormat(dueDate, format) {
 
 //Функция для получения разницы времени
 function getDiffTime(dateFromvalue, dateTovalue) {
+  // Преобразуем входные значения в объекты dayjs
   const dateFrom = dayjs(`${dateFromvalue.replace(/\.\d+Z$/, '')}Z`);
   const dateTo = dayjs(`${dateTovalue.replace(/\.\d+Z$/, '')}Z`);
 
-  const diffInMinutes = dateTo.diff(dateFrom, 'minute');
+  // Вычисляем разницу в виде объекта duration
+  const diff = dayjs.duration(dateTo.diff(dateFrom));
 
-  const days = Math.floor(diffInMinutes / 1440); // 1440 минут в сутках
-  const hours = Math.floor((diffInMinutes % 1440) / 60); // Оставшиеся часы
-  const mins = diffInMinutes % 60; // Оставшиеся минуты
+  // Извлекаем дни, часы и минуты
+  const days = diff.days();
+  const hours = diff.hours();
+  const mins = diff.minutes();
 
+  // Форматируем результат
   let result = '';
 
   if (days > 0) {
