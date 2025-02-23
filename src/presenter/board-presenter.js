@@ -9,28 +9,31 @@ import { render } from '../render.js';
 
 
 export default class BoardPresenter {
-  constructor({headerContainer, mainContainer, contolsFilter: controlsFilter}){
-    this.headerContainer = headerContainer;
-    this.mainContainer = mainContainer;
-    this.contolsFilter = controlsFilter;
+  constructor({headerElement, mainElement, contorlsElement, pointModel}){
+    this.headerElement = headerElement;
+    this.mainElement = mainElement;
+    this.contorlsElement = contorlsElement;
+    this.pointModel = pointModel;
   }
 
   init() {
-    render(new TripInfoView(), this.headerContainer, RenderPosition.AFTERBEGIN);
-    render(new FilterView(), this.contolsFilter, RenderPosition.BEFOREEND);
+    this.pointModel = [...this.pointModel.getPoint()];
 
-    render(new SortView(), this.mainContainer, RenderPosition.BEFOREEND);
+    render(new TripInfoView(), this.headerElement, RenderPosition.AFTERBEGIN);
+    render(new FilterView(), this.contorlsElement, RenderPosition.BEFOREEND);
+
+    render(new SortView(), this.mainElement, RenderPosition.BEFOREEND);
 
     // Создаем экземпляр ContentList (контейнер для списка точек маршрута) и отрисовываем его
     const contentList = new ContentList();
-    render(contentList, this.mainContainer, RenderPosition.BEFOREEND);
+    render(contentList, this.mainElement, RenderPosition.BEFOREEND);
 
     // Цикл для создания и отрисовки трех точек маршрута внутри контейнера списка
-    for(let i = 0; i < 3; i++){
+    for(let i = 0; i < this.pointModel.length; i++){
       // Создаем экземпляр PointView (точка маршрута) и отрисовываем его
-      render(new PointView(), contentList.getElement(), RenderPosition.BEFOREEND);
+      render(new PointView({point: this.pointModel[i]}), contentList.getElement(), RenderPosition.BEFOREEND);
     }
 
-    render(new EditFormView(), contentList.getElement(), RenderPosition.AFTERBEGIN);
+    render(new EditFormView({point: this.pointModel[0]}), contentList.getElement(), RenderPosition.AFTERBEGIN);
   }
 }
