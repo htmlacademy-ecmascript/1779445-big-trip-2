@@ -4,36 +4,47 @@ import TripInfoView from '../view/trip-info-view.js';
 import PointView from '../view/point-view.js';
 import EditFormView from '../view/edit-form-view.js';
 import ContentList from '../view/content-list.js';
-import { RenderPosition } from '../render.js';
-import { render } from '../render.js';
+import { render, RenderPosition } from '../framework/render.js';
 
+const { AFTERBEGIN, BEFOREEND } = RenderPosition;
 
 export default class BoardPresenter {
+  #headerElement = null;
+  #mainElement = null;
+  #contorlsElement = null;
+  #pointModel = null;
+  #points = [];
+
+  #taskListcomponent = new ContentList();
+
   constructor({headerElement, mainElement, contorlsElement, pointModel}){
-    this.headerElement = headerElement;
-    this.mainElement = mainElement;
-    this.contorlsElement = contorlsElement;
-    this.pointModel = pointModel;
+    this.#headerElement = headerElement;
+    this.#mainElement = mainElement;
+    this.#contorlsElement = contorlsElement;
+    this.#pointModel = pointModel;
   }
 
   init() {
-    this.pointModel = [...this.pointModel.getPoint()];
+    this.#points = [...this.#pointModel.points];
 
-    render(new TripInfoView(), this.headerElement, RenderPosition.AFTERBEGIN);
-    render(new FilterView(), this.contorlsElement, RenderPosition.BEFOREEND);
+    render(new TripInfoView(), this.#headerElement, AFTERBEGIN);
+    render(new FilterView(), this.#contorlsElement, BEFOREEND);
 
-    render(new SortView(), this.mainElement, RenderPosition.BEFOREEND);
+    render(new SortView(), this.#mainElement, BEFOREEND);
 
     // Создаем экземпляр ContentList (контейнер для списка точек маршрута) и отрисовываем его
-    const contentList = new ContentList();
-    render(contentList, this.mainElement, RenderPosition.BEFOREEND);
+    render(this.#taskListcomponent, this.#mainElement, BEFOREEND);
 
     // Цикл для создания и отрисовки трех точек маршрута внутри контейнера списка
-    for(let i = 0; i < this.pointModel.length; i++){
+    for(let i = 0; i < this.#points.length; i++){
       // Создаем экземпляр PointView (точка маршрута) и отрисовываем его
-      render(new PointView({point: this.pointModel[i]}), contentList.getElement(), RenderPosition.BEFOREEND);
+      this.#renderPoint(this.#points[i]);
     }
+    render(new EditFormView({point: this.#points[0]}), this.#taskListcomponent.element, AFTERBEGIN);
+  }
 
-    render(new EditFormView({point: this.pointModel[0]}), contentList.getElement(), RenderPosition.AFTERBEGIN);
+  #renderPoint(point) {
+    const renderComponent = new PointView({point});
+    render(renderComponent, this.#taskListcomponent.element, BEFOREEND);
   }
 }
