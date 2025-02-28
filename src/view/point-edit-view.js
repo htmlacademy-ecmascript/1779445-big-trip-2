@@ -1,8 +1,9 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import { getDateFormat, getRandomNumber } from '../util.js';
 import { DATE_FORMAT_TIME_EDITFORM } from '../const.js';
-function createEditFormTemplate(point){
 
+function createEditFormTemplate(point){
+  const photoCount = 5;
   const { dateFrom, dateTo, destination, offers, type} = point;
   const dateFormattedStart = getDateFormat(dateFrom, DATE_FORMAT_TIME_EDITFORM);
   const dateFormattedEnd = getDateFormat(dateTo, DATE_FORMAT_TIME_EDITFORM);
@@ -16,6 +17,12 @@ function createEditFormTemplate(point){
             <span class="event__offer-price">${offersItem.price}</span>
           </label>
         </div>`).join('');
+  }
+
+  function createPhotoArray(){
+
+    const photos = Array.from({ length: photoCount }, () => `<img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">`);
+    return photos;
   }
 
   return (
@@ -111,6 +118,9 @@ function createEditFormTemplate(point){
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
           <button class="event__reset-btn" type="reset">Cancel</button>
+          <button class="event__rollup-btn" type="button">
+            <span class="visually-hidden">Open event</span>
+          </button>
         </header>
         <section class="event__details">
           <section class="event__section  event__section--offers">
@@ -127,11 +137,7 @@ function createEditFormTemplate(point){
 
             <div class="event__photos-container">
               <div class="event__photos-tape">
-                <img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">
-                <img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">
-                <img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">
-                <img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">
-                <img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">
+               ${createPhotoArray()}
               </div>
             </div>
           </section>
@@ -141,25 +147,24 @@ function createEditFormTemplate(point){
   );
 }
 
-export default class EditFormView {
-  constructor({point}){
-    this.point = point;
+export default class PointEditView extends AbstractView {
+  #point = null;
+  #handleFormSubmit = null;
+
+  constructor({point, onFormSubmit}){
+    super();
+    this.#point = point;
+    this.#handleFormSubmit = onFormSubmit;
+
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
   }
 
-  getTemplate(point) {
-    return createEditFormTemplate(point);
+  get template() {
+    return createEditFormTemplate(this.#point);
   }
 
-  getElement() {
-    if(!this.element){
-      this.element = createElement(this.getTemplate(this.point));
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
-
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFormSubmit();
+  };
 }
