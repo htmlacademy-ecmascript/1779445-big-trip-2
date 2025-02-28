@@ -1,10 +1,11 @@
+import { render, replace, RenderPosition } from '../framework/render.js';
 import SortView from '../view/sort-view.js';
 import FilterView from '../view/filter-view.js';
 import TripInfoView from '../view/trip-info-view.js';
 import PointView from '../view/point-view.js';
-import EditFormView from '../view/edit-form-view.js';
+import PointEditView from '../view/point-edit-view.js';
 import ContentList from '../view/content-list.js';
-import { render, RenderPosition } from '../framework/render.js';
+
 
 const { AFTERBEGIN, BEFOREEND } = RenderPosition;
 
@@ -40,11 +41,53 @@ export default class BoardPresenter {
       // Создаем экземпляр PointView (точка маршрута) и отрисовываем его
       this.#renderPoint(this.#points[i]);
     }
-    render(new EditFormView({point: this.#points[0]}), this.#taskListcomponent.element, AFTERBEGIN);
   }
 
   #renderPoint(point) {
-    const renderComponent = new PointView({point});
-    render(renderComponent, this.#taskListcomponent.element, BEFOREEND);
+
+    const escKeyDownHandler = (evt) => {
+      if(evt.key === 'Escape'){
+        evt.preventDefault();
+        replaceFormToCard();
+        document.removeEventListener('keydown', escKeyDownHandler);
+      }
+    };
+
+    const rollUpHandler = (evt) => {
+      if(evt.target.classList.contains('event__rollup-btn')){
+        replaceFormToCard();
+        document.removeEventListener('keydown', escKeyDownHandler);
+        document.removeEventListener('click', rollUpHandler);
+      }
+    };
+
+    const pointEditComponent = new PointEditView({
+      point,
+      onFormSubmit: () => {
+        replaceFormToCard();
+        document.removeEventListener('keydown', escKeyDownHandler);
+      }
+    });
+
+    const pointComponent = new PointView({
+      point,
+      onEditClick: () => {
+        replaceCardToForm();
+        document.addEventListener('keydown',escKeyDownHandler);
+
+        const rollUpButton = pointEditComponent.element.querySelector('.event__rollup-btn');
+        rollUpButton.addEventListener('click', rollUpHandler);
+      }
+    });
+
+    function replaceCardToForm(){
+      replace(pointEditComponent, pointComponent);
+    }
+
+    function replaceFormToCard(){
+      replace(pointComponent, pointEditComponent);
+    }
+
+    render(pointComponent, this.#taskListcomponent.element, BEFOREEND);
   }
 }
