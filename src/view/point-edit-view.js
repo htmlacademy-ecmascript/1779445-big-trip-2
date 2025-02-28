@@ -3,6 +3,7 @@ import { getDateFormat, getRandomNumber } from '../util.js';
 import { DATE_FORMAT_TIME_EDITFORM } from '../const.js';
 
 function createEditFormTemplate(point){
+  const photoCount = 5;
   const { dateFrom, dateTo, destination, offers, type} = point;
   const dateFormattedStart = getDateFormat(dateFrom, DATE_FORMAT_TIME_EDITFORM);
   const dateFormattedEnd = getDateFormat(dateTo, DATE_FORMAT_TIME_EDITFORM);
@@ -16,6 +17,12 @@ function createEditFormTemplate(point){
             <span class="event__offer-price">${offersItem.price}</span>
           </label>
         </div>`).join('');
+  }
+
+  function createPhotoArray(){
+
+    const photos = Array.from({ length: photoCount }, () => `<img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">`);
+    return photos;
   }
 
   return (
@@ -130,11 +137,7 @@ function createEditFormTemplate(point){
 
             <div class="event__photos-container">
               <div class="event__photos-tape">
-                <img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">
-                <img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">
-                <img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">
-                <img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">
-                <img class="event__photo" src="https://loremflickr.com/248/152?random=${getRandomNumber()}.jpg" alt="Event photo">
+               ${createPhotoArray()}
               </div>
             </div>
           </section>
