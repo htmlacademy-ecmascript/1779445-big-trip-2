@@ -1,5 +1,6 @@
 import { render, replace, RenderPosition } from '../framework/render.js';
 import { changeFilters } from '../utils.js/filter.js';
+import { changeSortType } from '../utils.js/sort.js';
 import SortView from '../view/sort-view.js';
 import FilterView from '../view/filter-view.js';
 import TripInfoView from '../view/trip-info-view.js';
@@ -37,22 +38,33 @@ export default class BoardPresenter {
     // Создаем экземпляр ContentList (контейнер для списка точек маршрута) и отрисовываем его
     render(this.#taskListcomponent, this.#mainElement, BEFOREEND);
 
-    this.#initializeFilters();
+    changeSortType(this.#points, 'day');
 
+    this.#initializeFilters();
+    this.#initializeSorts();
     this.#renderPoints(this.#points);
   }
 
   #initializeFilters() {
     const filteList = document.querySelector('.trip-filters');
 
-    // Обработчик события для фильтров
+
     filteList.addEventListener('click', (evt) => {
       if (evt.target.tagName === 'INPUT') {
-        // Фильтруем точки на основе выбранного фильтра
-        const filteredPoints = changeFilters(this.#points, evt.target.value);
 
-        // Перерисовываем список точек
+        const filteredPoints = changeFilters(this.#points, evt.target.value);
         this.#renderPoints(filteredPoints);
+      }
+    });
+  }
+
+  #initializeSorts() {
+    const filteList = document.querySelector('.trip-sort');
+
+    filteList.addEventListener('click', (evt) => {
+      if (evt.target.tagName === 'INPUT') {
+        const sortedPoints = changeSortType(this.#points, evt.target.value);
+        this.#renderPoints(sortedPoints);
       }
     });
   }

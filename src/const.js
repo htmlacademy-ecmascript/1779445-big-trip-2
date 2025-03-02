@@ -10,11 +10,11 @@ const FilterType = {
 };
 
 const TripSort = {
-  DAY:'day',
-  EVENT:'event',
-  TIME:'time',
-  PRICE:'price',
-  OFFER:'offer',
+  DAY:'sort-day',
+  EVENT:'sort-event',
+  TIME:'sort-time',
+  PRICE:'sort-price',
+  OFFERS:'sort-offers',
 };
 
 const EventType = {
