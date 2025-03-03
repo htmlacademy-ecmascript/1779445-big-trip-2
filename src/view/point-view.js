@@ -1,4 +1,4 @@
-import { getDateFormat, getDiffTime, getRandomNumber } from '../util.js';
+import { getDateFormat, getDiffTime } from '../util.js';
 import { DATE_FORMAT_DAY, DATE_FORMAT_TIME } from '../const.js';
 import AbstractView from '../framework/view/abstract-view.js';
 
@@ -12,7 +12,7 @@ function createPointTemplate(point){
 
 
   function createOffers(){
-    const slicedOffers = offers.offers.slice(0, getRandomNumber(offers.offers.length));
+    const slicedOffers = offers.offers.slice(0, offers.offers.length);
     return slicedOffers.map((offersItem) => `<li class="event__offer">
             <span class="event__offer-title">${offersItem.title}</span>
             &plus;&euro;&nbsp;

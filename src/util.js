@@ -38,7 +38,6 @@ function getDiffTime(dateFromvalue, dateTovalue) {
     result += `${String(hours).padStart(2, '0')}H `;
   }
   result += `${String(mins).padStart(2, '0')}M`;
-
   return result.trim();
 }
 
