@@ -38,6 +38,7 @@ export default class BoardPresenter {
     // Создаем экземпляр ContentList (контейнер для списка точек маршрута) и отрисовываем его
     render(this.#taskListcomponent, this.#mainElement, BEFOREEND);
 
+    //Первичная инициализация сортировки для корректного отображения
     changeSortType(this.#points, 'day');
 
     this.#initializeFilters();
