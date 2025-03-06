@@ -1,5 +1,5 @@
 
-import { getRandomNumber } from '../util.js';
+import { getRandomNumber } from '../utils/common.js';
 
 const mockOffers = [
   {

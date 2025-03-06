@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { getDateFormat, getRandomNumber } from '../util.js';
+import { getDateFormat, getRandomNumber } from '../utils/common.js';
 import { DATE_FORMAT_TIME_EDITFORM } from '../const.js';
 import { EventType } from '../const.js';
 
@@ -124,14 +124,19 @@ export default class PointEditView extends AbstractView {
     this.#handleFormSubmit = onFormSubmit;
 
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formSubmitHandler);
   }
 
   get template() {
     return createEditFormTemplate(this.#point);
   }
 
+  get rollupButton() {
+    return this.element.querySelector('.event__rollup-btn');
+  }
+
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit();
+    this.#handleFormSubmit(this.#point);
   };
 }
