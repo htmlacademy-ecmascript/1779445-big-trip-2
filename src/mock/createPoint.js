@@ -1,7 +1,13 @@
 import { mockPoints } from '../mock/points.js';
-import { getRandomArrayElement } from '../util.js';
+import { getRandomArrayElement } from '../utils/common.js';
+import { nanoid } from 'nanoid';
 
 function getRandomPoint(){
-  return getRandomArrayElement(mockPoints);
+  return {
+    id: nanoid(),
+    ...getRandomArrayElement(mockPoints)
+  };
 }
+
+
 export { getRandomPoint };

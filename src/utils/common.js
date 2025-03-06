@@ -41,4 +41,15 @@ function getDiffTime(dateFromvalue, dateTovalue) {
   return result.trim();
 }
 
-export {getRandomArrayElement, getRandomNumber, getDateFormat, getDiffTime};
+
+function updateItem(items, update){
+  return items.map((item) => item.id === update.id ? update : item);
+}
+
+export {
+  getRandomArrayElement,
+  getRandomNumber,
+  getDateFormat,
+  getDiffTime,
+  updateItem,
+};
