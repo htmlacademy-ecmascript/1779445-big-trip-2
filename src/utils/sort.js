@@ -3,6 +3,7 @@ import { TripSort } from '../const.js';
 import dayjs from 'dayjs';
 
 export function changeSortType(points, target){
+
   switch (target) {
     case TripSort.PRICE.slice(0):
       return points.sort((a, b) => b.basePrice - a.basePrice);

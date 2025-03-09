@@ -29,4 +29,19 @@ const EventType = {
   RESTARAUNT:'restaurant',
 };
 
-export { DATE_FORMAT_DAY, DATE_FORMAT_TIME, DATE_FORMAT_TIME_EDITFORM, FilterType, TripSort, EventType };
+const FilterEmptyPoints = {
+  EVERYTHING:'Click New Event to create your first point',
+  FUTURE:'There are no future events now',
+  PRESENT:'There are no present events now',
+  PAST:'There are no past events now',
+};
+
+export {
+  DATE_FORMAT_DAY,
+  DATE_FORMAT_TIME,
+  DATE_FORMAT_TIME_EDITFORM,
+  FilterType,
+  TripSort,
+  EventType,
+  FilterEmptyPoints,
+};

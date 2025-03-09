@@ -118,7 +118,7 @@ export default class PointEditView extends AbstractView {
   #point = null;
   #handleFormSubmit = null;
 
-  constructor({point, onFormSubmit}){
+  constructor({ point, onFormSubmit }){
     super();
     this.#point = point;
     this.#handleFormSubmit = onFormSubmit;
@@ -129,10 +129,6 @@ export default class PointEditView extends AbstractView {
 
   get template() {
     return createEditFormTemplate(this.#point);
-  }
-
-  get rollupButton() {
-    return this.element.querySelector('.event__rollup-btn');
   }
 
   #formSubmitHandler = (evt) => {

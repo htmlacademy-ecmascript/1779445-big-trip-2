@@ -1,4 +1,5 @@
-import { render, RenderPosition } from '../framework/render.js';
+import { render, RenderPosition, remove } from '../framework/render.js';
+import { FilterType, TripSort } from '../const.js';
 import { changeFilters } from '../utils/filter.js';
 import { changeSortType } from '../utils/sort.js';
 import { updateItem } from '../utils/common.js';
@@ -7,7 +8,7 @@ import FilterView from '../view/filter-view.js';
 import TripInfoView from '../view/trip-info-view.js';
 import PointListView from '../view/point-list-view.js';
 import PointPresenter from './point-presenter.js';
-
+import NoPointsView from '../view/no-points-view.js';
 
 const { AFTERBEGIN, BEFOREEND } = RenderPosition;
 export default class BoardPresenter {
@@ -15,15 +16,16 @@ export default class BoardPresenter {
   #mainElement = null;
   #contorlsElement = null;
   #pointModel = null;
-  #filterType = null;
-  #sortType = null;
+  #filterType = FilterType.EVERYTHING;
+  #sortType = TripSort.DAY;
+  #sortComponent = null;
+  #filterComponent = null;
+  #sortedAndFilteredPoints = [];
   #boardPoints = [];
   #pointPresenters = new Map();
-
   #pointListComponent = new PointListView();
-  #sortComponent = new SortView();
   #tripInfoComponent = new TripInfoView();
-  #filterComponent = new FilterView();
+  #noPointsComponent = null;
 
   constructor({headerElement, mainElement, contorlsElement, pointModel}){
     this.#headerElement = headerElement;
@@ -33,26 +35,18 @@ export default class BoardPresenter {
   }
 
   init() {
-
     this.#boardPoints = [...this.#pointModel.points];
-
+    this.#sortedAndFilteredPoints = [...changeSortType(this.#boardPoints)];
     this.#renderTripInfo();
-    this.#renderFilter();
+    this.#renderAllPoints(this.#sortedAndFilteredPoints);
     this.#renderSort();
+    this.#renderFilter();
     this.#renderPointList();
-
-    this.#initializeSorts();
-    this.#initializeFilters();
-    this.#renderAllPoints(this.#boardPoints);
     this.#hadleModeChange();
   }
 
   #renderPointList(){
     render(this.#pointListComponent, this.#mainElement, BEFOREEND);
-  }
-
-  #renderFilter(){
-    render(this.#filterComponent, this.#contorlsElement, BEFOREEND);
   }
 
   #renderTripInfo() {
@@ -63,52 +57,49 @@ export default class BoardPresenter {
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
   };
 
-
   #handlePointChange = (updatePoint) => {
     this.#boardPoints = updateItem(this.#boardPoints, updatePoint);
     this.#pointPresenters.get(updatePoint.id).init(updatePoint);
   };
 
-  #renderSort(){
-    changeSortType(this.#boardPoints);
+  #renderSort() {
+    this.#sortComponent = new SortView({
+      onSortTypeChange: this.#handleSortTypeChange,
+    });
     render(this.#sortComponent, this.#mainElement, BEFOREEND);
   }
 
-  #initializeFilters() {
-    this.#initializeEventListeners('.trip-filters', 'filter', changeFilters, (type) => {
-      this.#filterType = type;
+  #renderFilter(){
+    this.#filterComponent = new FilterView({
+      points: this.#sortedAndFilteredPoints,
+      onFilterTypeChange: this.#handleFilterTypeChange,
     });
+    render(this.#filterComponent, this.#contorlsElement, BEFOREEND);
   }
 
-  #initializeSorts() {
-    this.#initializeEventListeners('.trip-sort', 'sort', changeSortType, (type) => {
-      this.#sortType = type;
-    });
-  }
+  #handleSortTypeChange = (sortType) => {
+    this.#sortType = sortType;
+    this.#sortedAndFilteredPoints = changeSortType(this.#sortedAndFilteredPoints, this.#sortType);
+    this.#renderAllPoints(this.#sortedAndFilteredPoints);
+  };
 
-  #initializeEventListeners(selector, type, changeFunction, setTypeCallback) {
-    const element = document.querySelector(selector);
+  #handleFilterTypeChange = (filterType) => {
+    this.#filterType = filterType;
+    this.#sortedAndFilteredPoints = changeFilters(this.#boardPoints, this.#filterType);
+    this.#renderAllPoints(this.#sortedAndFilteredPoints, filterType);
+  };
 
-    element.addEventListener('click', (evt) => {
-      if (evt.target.tagName === 'INPUT') {
-        const newType = evt.target.value;
-        setTypeCallback(newType);
-
-        const changedArray = changeFunction(this.#boardPoints, newType);
-        const sortedAndFilteredArray = type === 'filter'
-          ? changeSortType(changedArray, this.#sortType)
-          : changeFilters(changedArray, this.#filterType);
-
-        this.#renderAllPoints(sortedAndFilteredArray);
-      }
-    });
-  }
-
-  #renderAllPoints(points) {
+  #renderAllPoints(points, filterType) {
     this.#pointListComponent.element.innerHTML = '';
 
-    for (let i = 0; i < points.length; i++) {
-      this.#renderPoint(points[i]);
+    if(points.length === 0){
+      this.#noPointsComponent = new NoPointsView({filterType});
+      render(this.#noPointsComponent, this.#mainElement, BEFOREEND);
+    } else {
+      remove(this.#noPointsComponent);
+      for (let i = 0; i < points.length; i++) {
+        this.#renderPoint(points[i]);
+      }
     }
   }
 
@@ -121,10 +112,5 @@ export default class BoardPresenter {
 
     pointPresenter.init(point);
     this.#pointPresenters.set(point.id, pointPresenter);
-  }
-
-  #clearPointList() {
-    this.#pointPresenters.forEach((presenter) => presenter.destroy());
-    this.#pointPresenters.clear();
   }
 }

@@ -11,12 +11,9 @@ export default class PointPresenter {
   #pointListContainer = null;
   #handleDataChange = null;
   #handleModeChange = null;
-
   #pointComponent = null;
   #pointEditComponent = null;
-
   #point = null;
-  #rollUpButton = null;
   #mode = Mode.DEFAULT;
 
   constructor({ pointListContainer, onDataChange, onModeChange}) {
@@ -41,8 +38,6 @@ export default class PointPresenter {
       point: this.#point,
       onFormSubmit: this.#handleFormSumbmit,
     });
-
-    this.#rollUpButton = this.#pointEditComponent.rollupButton;
 
     if (prevPointComponent === null || prevPointEditComponent === null) {
       render(this.#pointComponent, this.#pointListContainer);
@@ -82,19 +77,12 @@ export default class PointPresenter {
   #replaceFormToCard() {
     replace(this.#pointComponent, this.#pointEditComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
-    this.#rollUpButton.removeEventListener('click', this.#rollUpHandler);
     this.#mode = Mode.DEFAULT;
   }
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
-      this.#replaceFormToCard();
-    }
-  };
-
-  #rollUpHandler = (evt) => {
-    if (evt.target.classList.contains('event__rollup-btn')) {
       this.#replaceFormToCard();
     }
   };
