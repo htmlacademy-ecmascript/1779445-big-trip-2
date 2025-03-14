@@ -1,6 +1,6 @@
 import { render, RenderPosition, remove } from '../framework/render.js';
 import { FilterType, TripSort } from '../const.js';
-import { changeFilters } from '../utils/filter.js';
+import { filterByTimePeriod } from '../utils/filter.js';
 import { changeSortType } from '../utils/sort.js';
 import { updateItem } from '../utils/common.js';
 import SortView from '../view/sort-view.js';
@@ -11,6 +11,7 @@ import PointPresenter from './point-presenter.js';
 import NoPointsView from '../view/no-points-view.js';
 
 const { AFTERBEGIN, BEFOREEND } = RenderPosition;
+
 export default class BoardPresenter {
   #headerElement = null;
   #mainElement = null;
@@ -20,14 +21,13 @@ export default class BoardPresenter {
   #sortType = TripSort.DAY;
   #sortComponent = null;
   #filterComponent = null;
-  #sortedAndFilteredPoints = [];
   #boardPoints = [];
   #pointPresenters = new Map();
   #pointListComponent = new PointListView();
   #tripInfoComponent = new TripInfoView();
   #noPointsComponent = null;
 
-  constructor({headerElement, mainElement, contorlsElement, pointModel}){
+  constructor({ headerElement, mainElement, contorlsElement, pointModel }) {
     this.#headerElement = headerElement;
     this.#mainElement = mainElement;
     this.#contorlsElement = contorlsElement;
@@ -36,16 +36,20 @@ export default class BoardPresenter {
 
   init() {
     this.#boardPoints = [...this.#pointModel.points];
-    this.#sortedAndFilteredPoints = [...changeSortType(this.#boardPoints)];
     this.#renderTripInfo();
-    this.#renderAllPoints(this.#sortedAndFilteredPoints);
-    this.#renderSort();
+    this.#renderAllPoints();
     this.#renderFilter();
+    this.#renderSort();
     this.#renderPointList();
     this.#hadleModeChange();
   }
 
-  #renderPointList(){
+  get #sortedAndFilteredPoints() {
+    const filtered = filterByTimePeriod([...this.#boardPoints], this.#filterType);
+    return changeSortType(filtered, this.#sortType);
+  }
+
+  #renderPointList() {
     render(this.#pointListComponent, this.#mainElement, BEFOREEND);
   }
 
@@ -62,14 +66,7 @@ export default class BoardPresenter {
     this.#pointPresenters.get(updatePoint.id).init(updatePoint);
   };
 
-  #renderSort() {
-    this.#sortComponent = new SortView({
-      onSortTypeChange: this.#handleSortTypeChange,
-    });
-    render(this.#sortComponent, this.#mainElement, BEFOREEND);
-  }
-
-  #renderFilter(){
+  #renderFilter() {
     this.#filterComponent = new FilterView({
       points: this.#sortedAndFilteredPoints,
       onFilterTypeChange: this.#handleFilterTypeChange,
@@ -77,23 +74,29 @@ export default class BoardPresenter {
     render(this.#filterComponent, this.#contorlsElement, BEFOREEND);
   }
 
-  #handleSortTypeChange = (sortType) => {
-    this.#sortType = sortType;
-    this.#sortedAndFilteredPoints = changeSortType(this.#sortedAndFilteredPoints, this.#sortType);
-    this.#renderAllPoints(this.#sortedAndFilteredPoints);
-  };
+  #renderSort() {
+    this.#sortComponent = new SortView({
+      onSortTypeChange: this.#handleSortTypeChange,
+    });
+    render(this.#sortComponent, this.#mainElement, BEFOREEND);
+  }
 
   #handleFilterTypeChange = (filterType) => {
     this.#filterType = filterType;
-    this.#sortedAndFilteredPoints = changeFilters(this.#boardPoints, this.#filterType);
-    this.#renderAllPoints(this.#sortedAndFilteredPoints, filterType);
+    this.#renderAllPoints();
   };
 
-  #renderAllPoints(points, filterType) {
-    this.#pointListComponent.element.innerHTML = '';
+  #handleSortTypeChange = (sortType) => {
+    this.#sortType = sortType;
+    this.#renderAllPoints();
+  };
 
-    if(points.length === 0){
-      this.#noPointsComponent = new NoPointsView({filterType});
+  #renderAllPoints() {
+    this.#pointListComponent.element.innerHTML = '';
+    const points = this.#sortedAndFilteredPoints; // Используем геттер
+
+    if (points.length === 0) {
+      this.#noPointsComponent = new NoPointsView({ filterType: this.#filterType });
       render(this.#noPointsComponent, this.#mainElement, BEFOREEND);
     } else {
       remove(this.#noPointsComponent);
