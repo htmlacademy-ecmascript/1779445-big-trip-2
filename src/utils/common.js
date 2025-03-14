@@ -7,7 +7,7 @@ function getRandomArrayElement(items) {
 }
 
 function getRandomNumber(num = 100) {
-  return Math.floor(Math.random() * num) + 1;
+  return Math.floor(Math.random() * num);
 }
 
 function getDateFormat(dueDate, format) {
@@ -40,7 +40,6 @@ function getDiffTime(dateFromvalue, dateTovalue) {
   result += `${String(mins).padStart(2, '0')}M`;
   return result.trim();
 }
-
 
 function updateItem(items, update){
   return items.map((item) => item.id === update.id ? update : item);
