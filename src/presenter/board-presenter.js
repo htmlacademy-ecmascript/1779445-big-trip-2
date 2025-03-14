@@ -10,7 +10,7 @@ import PointListView from '../view/point-list-view.js';
 import PointPresenter from './point-presenter.js';
 import NoPointsView from '../view/no-points-view.js';
 
-const { AFTERBEGIN, BEFOREEND } = RenderPosition;
+const { AFTERBEGIN, BEFOREEND, AFTEREND } = RenderPosition;
 
 export default class BoardPresenter {
   #headerElement = null;
@@ -26,7 +26,6 @@ export default class BoardPresenter {
   #pointListComponent = new PointListView();
   #tripInfoComponent = new TripInfoView();
   #noPointsComponent = null;
-
   constructor({ headerElement, mainElement, contorlsElement, pointModel }) {
     this.#headerElement = headerElement;
     this.#mainElement = mainElement;
@@ -36,10 +35,18 @@ export default class BoardPresenter {
 
   init() {
     this.#boardPoints = [...this.#pointModel.points];
+
+    if(this.#boardPoints.length === 0){
+      this.#renderNoPointsComponent();
+      this.#renderSort('allDisabled');
+    } else{
+      this.#renderSort();
+    }
+
     this.#renderTripInfo();
     this.#renderAllPoints();
     this.#renderFilter();
-    this.#renderSort();
+
     this.#renderPointList();
     this.#hadleModeChange();
   }
@@ -48,6 +55,13 @@ export default class BoardPresenter {
     const filtered = filterByTimePeriod([...this.#boardPoints], this.#filterType);
     return changeSortType(filtered, this.#sortType);
   }
+
+  #renderNoPointsComponent = () => {
+    this.#noPointsComponent = new NoPointsView({
+      filter:  this.#filterType,
+    });
+    render(this.#noPointsComponent, this.#mainElement, AFTEREND);
+  };
 
   #renderPointList() {
     render(this.#pointListComponent, this.#mainElement, BEFOREEND);
@@ -74,8 +88,9 @@ export default class BoardPresenter {
     render(this.#filterComponent, this.#contorlsElement, BEFOREEND);
   }
 
-  #renderSort() {
+  #renderSort(all) {
     this.#sortComponent = new SortView({
+      all: all,
       onSortTypeChange: this.#handleSortTypeChange,
     });
     render(this.#sortComponent, this.#mainElement, BEFOREEND);
@@ -95,14 +110,8 @@ export default class BoardPresenter {
     this.#pointListComponent.element.innerHTML = '';
     const points = this.#sortedAndFilteredPoints; // Используем геттер
 
-    if (points.length === 0) {
-      this.#noPointsComponent = new NoPointsView({ filterType: this.#filterType });
-      render(this.#noPointsComponent, this.#mainElement, BEFOREEND);
-    } else {
-      remove(this.#noPointsComponent);
-      for (let i = 0; i < points.length; i++) {
-        this.#renderPoint(points[i]);
-      }
+    for (let i = 0; i < points.length; i++) {
+      this.#renderPoint(points[i]);
     }
   }
 
