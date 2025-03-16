@@ -4,7 +4,8 @@ import { TripSort } from '../const.js';
 function createSortTemplate(all){
 
   function getDisabled(item) {
-    if(all === 'allDisabled' || item === 'event' || item === 'offers'){
+    const disabledSortType = ['event', 'offers'];
+    if(all === 'allDisabled' || disabledSortType.includes(item)){
       return 'disabled';
     } else{
       return '';
@@ -23,7 +24,7 @@ function createSortTemplate(all){
           type="radio" name="trip-sort"
           value="sort-${item}"
           ${getDisabled(item)}
-          ${item === 'day' ? 'checked' : ''}
+          ${(item === 'day' && getDisabled(item) !== 'disabled') ? 'checked' : ''}
         >
         <label class="trip-sort__btn" for="sort-${item}" data-sort-type="sort-${item}">${item.slice(0, 1).toUpperCase() + item.slice(1)}</label>
      </div>`;
@@ -53,16 +54,15 @@ export default class SortView extends AbstractView {
   }
 
   #sortTypeChangeHandler(evt) {
-    if(
-      this.all === 'allDisabled'
-      || evt.target.dataset.sortType === 'sort-event'
-      || evt.target.dataset.sortType === 'sort-offers'
-    ) {
+    const element = evt.target.parentElement.querySelector('.trip-sort__input');
+    const sortType = evt.target.dataset.sortType;
+
+    if(evt.target.tagName !== 'LABEL' || this.#all === 'allDisabled' || element.disabled){
       return;
     }
-    const element = evt.target.parentElement.querySelector('.trip-sort__input');
+
     element.checked = true;
     evt.preventDefault();
-    this.#handleSortTypeChange(evt.target.dataset.sortType);
+    this.#handleSortTypeChange(sortType);
   }
 }

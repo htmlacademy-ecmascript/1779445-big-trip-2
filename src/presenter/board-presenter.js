@@ -1,4 +1,4 @@
-import { render, RenderPosition, remove } from '../framework/render.js';
+import { render, RenderPosition } from '../framework/render.js';
 import { FilterType, TripSort } from '../const.js';
 import { filterByTimePeriod } from '../utils/filter.js';
 import { changeSortType } from '../utils/sort.js';
@@ -35,25 +35,26 @@ export default class BoardPresenter {
 
   init() {
     this.#boardPoints = [...this.#pointModel.points];
-
-    if(this.#boardPoints.length === 0){
-      this.#renderNoPointsComponent();
-      this.#renderSort('allDisabled');
-    } else{
-      this.#renderSort();
-    }
-
-    this.#renderTripInfo();
-    this.#renderAllPoints();
+    this.#renderPointsOrEmptyView();
     this.#renderFilter();
-
-    this.#renderPointList();
-    this.#hadleModeChange();
   }
 
   get #sortedAndFilteredPoints() {
     const filtered = filterByTimePeriod([...this.#boardPoints], this.#filterType);
     return changeSortType(filtered, this.#sortType);
+  }
+
+  #renderPointsOrEmptyView() {
+    if(this.#boardPoints.length === 0){
+      this.#renderNoPointsComponent();
+      this.#renderSort('allDisabled');
+    } else{
+      this.#renderSort();
+      this.#renderTripInfo();
+      this.#renderPointList();
+      this.#renderAllPoints();
+      this.#hadleModeChange();
+    }
   }
 
   #renderNoPointsComponent = () => {

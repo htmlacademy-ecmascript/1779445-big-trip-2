@@ -29,6 +29,13 @@ const EventType = {
   RESTARAUNT:'restaurant',
 };
 
+const DestinationType = {
+  TOKYO: 'Tokyo',
+  GENEVA: 'Geneva',
+  AMSTERDAM: 'Amsterdam',
+  CHAMONIX: 'Chamonix',
+};
+
 const FilterEmptyPoints = {
   EVERYTHING:'Click New Event to create your first point',
   FUTURE:'There are no future events now',
@@ -44,4 +51,5 @@ export {
   TripSort,
   EventType,
   FilterEmptyPoints,
+  DestinationType,
 };
