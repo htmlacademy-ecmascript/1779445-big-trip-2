@@ -98,7 +98,6 @@ function createPhotoTemplate(){
 }
 
 function createEditFormTemplate(point){
-
   const { dateFrom, dateTo, destination, offers, type} = point;
   const dateFormattedStart = getDateFormat(dateFrom, DATE_FORMAT_TIME_EDITFORM);
   const dateFormattedEnd = getDateFormat(dateTo, DATE_FORMAT_TIME_EDITFORM);
