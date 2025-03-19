@@ -7,7 +7,7 @@ function getRandomArrayElement(items) {
 }
 
 function getRandomNumber(num = 100) {
-  return Math.floor(Math.random() * num);
+  return Math.floor(Math.random() * num) + 1;
 }
 
 function getDateFormat(dueDate, format) {

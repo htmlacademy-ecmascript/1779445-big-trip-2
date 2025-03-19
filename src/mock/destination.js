@@ -1,8 +1,9 @@
 import { getRandomNumber } from '../utils/common.js';
+import { nanoid } from 'nanoid';
 
 const mockDestination = [
   {
-    id: '1',
+    id: nanoid(),
     description: 'Chamonix, is a beautiful city, a true asian pearl, with crowded streets.',
     name: 'Chamonix',
     pictures: [
@@ -13,8 +14,8 @@ const mockDestination = [
     ]
   },
   {
-    id: '2',
-    description: 'Geneva, is a beautiful city, a true asian pearl, with crowded streets.',
+    id: nanoid(),
+    description: 'Geneva, is a beautiful city, a true asian pearl, with crowded streets. Beautiful city, a true asian pearl, with crowded streets.',
     name: 'Geneva',
     pictures: [
       {
@@ -24,7 +25,7 @@ const mockDestination = [
     ]
   },
   {
-    id: '3',
+    id: nanoid(),
     description: 'Amsterdam, is a beautiful city, a true asian pearl, with crowded streets.',
     name: 'Amsterdam',
     pictures: [
@@ -35,8 +36,8 @@ const mockDestination = [
     ]
   },
   {
-    id: '4',
-    description: 'Tokyo, is a beautiful city, a true asian pearl, with crowded streets.',
+    id: nanoid(),
+    description: 'Tokyo, is a beautiful city, a true asian pearl, with crowded streets. Beautiful city, a true asian pearl, with crowded streets.',
     name: 'Tokyo',
     pictures: [
       {

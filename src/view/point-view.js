@@ -12,6 +12,10 @@ function createPointTemplate(point){
 
 
   function createOffers(){
+    if(Object.keys(offers).length === 0) {
+      return {};
+    }
+
     const slicedOffers = offers.offers.slice(0, offers.offers.length);
     return slicedOffers.map((offersItem) => `<li class="event__offer">
             <span class="event__offer-title">${offersItem.title}</span>
