@@ -1,85 +1,177 @@
 
 import { getRandomNumber } from '../utils/common.js';
+import { nanoid } from 'nanoid';
 
 const mockOffers = [
   {
-    type: 'Taxi',
+    type: 'taxi',
     offers: [
       {
-        id: '1',
+        id: nanoid(),
         title: 'Order Uber',
         price: getRandomNumber(),
+        checked: false
       },
       {
-        id: '2',
+        id: nanoid(),
         title: 'Order Yandex',
         price: getRandomNumber(),
+        checked: false,
       },
       {
-        id: '3',
+        id: nanoid(),
         title: 'Order Maxim',
         price: getRandomNumber(),
+        checked: false,
       }
     ]
   },
   {
-    type: 'Sightseeing',
+    type: 'bus',
     offers: [
       {
-        id: '4',
-        title: 'Book tickets',
+        id: nanoid(),
+        title: 'Buy ticket',
         price: getRandomNumber(),
+        checked: false,
+      },
+    ]
+  },
+  {
+    type: 'train',
+    offers: [
+      {
+        id: nanoid(),
+        title: 'Choose the Hogwarts Express',
+        price: getRandomNumber(),
+        checked: false,
       },
       {
-        id: '5',
-        title: 'Lunch in city',
+        id: nanoid(),
+        title: 'Choose lastochka',
         price: getRandomNumber(),
+        checked: false,
       },
       {
-        id: '5',
-        title: 'Add coffe',
+        id: nanoid(),
+        title: 'Choose shinkansen',
         price: getRandomNumber(),
+        checked: false,
       }
     ]
   },
   {
-    type: 'Flight',
+    type: 'ship',
     offers: [
       {
-        id: '6',
+        id: nanoid(),
+        title: 'Choose underwater room',
+        price: getRandomNumber(),
+        checked: false,
+      },
+      {
+        id: nanoid(),
+        title: 'Visit Spongebob',
+        price: getRandomNumber(),
+        checked: false,
+      },
+      {
+        id: nanoid(),
+        title: 'Don\'t sail on the Titanic',
+        price: getRandomNumber(),
+        checked: false,
+      }
+    ]
+  },
+  {
+    type: 'drive',
+    offers: []
+  },
+  {
+    type: 'flight',
+    offers: [
+      {
+        id: nanoid(),
         title: 'Add luggage',
         price: getRandomNumber(),
+        checked: false,
       },
       {
-        id: '7',
+        id: nanoid(),
         title: 'Add meal',
         price: getRandomNumber(),
+        checked: false,
       },
       {
-        id: '8',
+        id: nanoid(),
         title: 'Choose seats',
         price: getRandomNumber(),
+        checked: false,
       }
     ]
   },
   {
-    type: 'Check-in',
+    type: 'check-in',
     offers: [
       {
-        id: '9',
+        id: nanoid(),
         title: 'Add breakfast',
         price: getRandomNumber(),
+        checked: false,
       },
       {
-        id: '10',
+        id:  nanoid(),
         title: 'Add pool ticket',
         price: getRandomNumber(),
+        checked: false,
       }
     ]
   },
   {
-    type: 'Drive',
-    offers: []
+    type: 'sightseeing',
+    offers: [
+      {
+        id: nanoid(),
+        title: 'Book tickets',
+        price: getRandomNumber(),
+        checked: false,
+      },
+      {
+        id: nanoid(),
+        title: 'Lunch in city',
+        price: getRandomNumber(),
+        checked: false,
+      },
+      {
+        id: nanoid(),
+        title: 'Add coffe',
+        price: getRandomNumber(),
+        checked: false,
+      }
+    ]
+  },
+  {
+    type: 'restaurant',
+    offers: [
+      {
+        id: nanoid(),
+        title: 'Order truffles',
+        price: getRandomNumber(),
+        checked: false,
+      },
+      {
+        id: nanoid(),
+        title: 'Order a steak',
+        price: getRandomNumber(),
+        checked: false,
+      },
+      {
+        id: nanoid(),
+        title: 'Order coffe',
+        price: getRandomNumber(),
+        checked: false,
+      }
+    ]
   },
 ];
 
