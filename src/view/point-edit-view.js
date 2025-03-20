@@ -4,6 +4,8 @@ import { DATE_FORMAT_TIME_EDITFORM } from '../const.js';
 import { EventType, DestinationType } from '../const.js';
 import { mockOffers } from '../mock/offers.js';
 import { mockDestination } from '../mock/destination.js';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
 // Возвращаем template для выбора типа маршрута
 function createEventTypeButtonTemplate(point, type) {
@@ -193,8 +195,8 @@ export default class PointEditView extends AbstractStatefulView {
   }
 
   _restoreHandlers(){
-    this.element.querySelector('form').addEventListener('submit', this.#handleFormSumbmit);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handleFormSumbmit);
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formSubmitHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
@@ -217,7 +219,7 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
-  #handleFormSumbmit = (evt) => {
+  #formSubmitHandler = (evt) => {
     evt.preventDefault();
     this.#handleFormSubmit(PointEditView.parseStatetpPoint(this._state));
   };
