@@ -94,13 +94,9 @@ function createPriceTemplate(point) {
 
 // Получаем и возвращаем template для офферов
 function createOffersTemplate(offers){
-  if(Object.keys(offers).length === 0){
-    return {};
-  }
-
-  return offers.offers.map((offersItem) =>
+  return offers.offersArray.map((offersItem) =>
     `<div class="event__offer-selector">
-      <input class="event__offer-checkbox visually-hidden" id="event-offer-luggage-${offersItem.id}" type="checkbox" name="event-offer-luggage" ${offersItem.isChecked ? 'checked' : ''}>
+      <input class="event__offer-checkbox visually-hidden" id="event-offer-luggage-${offersItem.id}" type="checkbox" name="event-offer-luggage" ${offersItem.checked ? 'checked' : ''}>
       <label class="event__offer-label" for="event-offer-luggage-${offersItem.id}">
         <span class="event__offer-title">
           ${offersItem.title}
@@ -197,29 +193,31 @@ export default class PointEditView extends AbstractStatefulView {
   }
 
   _restoreHandlers(){
-    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formSubmitHandler);
+    this.element.querySelector('form').addEventListener('submit', this.#handleFormSumbmit);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handleFormSumbmit);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
     this.element.querySelectorAll('.event__offer-checkbox').forEach((offer) => {
-      offer.addEventListener('change', this.#offerChangeHandler);
+      offer.addEventListener('click', this.#offerChangeHandler);
     });
 
   }
 
   #offerChangeHandler = (evt) => {
-    const isChecked = evt.target.checked;
-    const offerId = evt.target.id;
+    const offerId = evt.target.id.slice(20);
 
     this.updateElement({
       ...this._state,
-      offers: this._state.offers.offers.map((offer) =>
-        offerId === offer.id ? { ...offer, checked: isChecked } : offer),
+      offers: {
+        ...this._state.offers,
+        offersArray: this._state.offers.offersArray.map((offer) =>
+          offerId === offer.id ? { ...offer, checked: !offer.checked } : offer)
+      },
     });
   };
 
-  #formSubmitHandler = (evt) => {
+  #handleFormSumbmit = (evt) => {
     evt.preventDefault();
     this.#handleFormSubmit(PointEditView.parseStatetpPoint(this._state));
   };

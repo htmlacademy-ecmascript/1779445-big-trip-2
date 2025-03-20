@@ -109,7 +109,7 @@ export default class BoardPresenter {
 
   #renderAllPoints() {
     this.#pointListComponent.element.innerHTML = '';
-    const points = this.#sortedAndFilteredPoints; // Используем геттер
+    const points = this.#sortedAndFilteredPoints;
 
     for (let i = 0; i < points.length; i++) {
       this.#renderPoint(points[i]);
