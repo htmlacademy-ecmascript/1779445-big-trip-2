@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 const mockOffers = [
   {
     type: 'taxi',
-    offers: [
+    offersArray: [
       {
         id: nanoid(),
         title: 'Order Uber',
@@ -28,7 +28,7 @@ const mockOffers = [
   },
   {
     type: 'bus',
-    offers: [
+    offersArray: [
       {
         id: nanoid(),
         title: 'Buy ticket',
@@ -39,7 +39,7 @@ const mockOffers = [
   },
   {
     type: 'train',
-    offers: [
+    offersArray: [
       {
         id: nanoid(),
         title: 'Choose the Hogwarts Express',
@@ -62,7 +62,7 @@ const mockOffers = [
   },
   {
     type: 'ship',
-    offers: [
+    offersArray: [
       {
         id: nanoid(),
         title: 'Choose underwater room',
@@ -85,11 +85,11 @@ const mockOffers = [
   },
   {
     type: 'drive',
-    offers: []
+    offersArray: []
   },
   {
     type: 'flight',
-    offers: [
+    offersArray: [
       {
         id: nanoid(),
         title: 'Add luggage',
@@ -112,7 +112,7 @@ const mockOffers = [
   },
   {
     type: 'check-in',
-    offers: [
+    offersArray: [
       {
         id: nanoid(),
         title: 'Add breakfast',
@@ -129,7 +129,7 @@ const mockOffers = [
   },
   {
     type: 'sightseeing',
-    offers: [
+    offersArray: [
       {
         id: nanoid(),
         title: 'Book tickets',
@@ -152,7 +152,7 @@ const mockOffers = [
   },
   {
     type: 'restaurant',
-    offers: [
+    offersArray: [
       {
         id: nanoid(),
         title: 'Order truffles',

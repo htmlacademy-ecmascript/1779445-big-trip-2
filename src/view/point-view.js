@@ -10,18 +10,20 @@ function createPointTemplate(point){
   const diffTime = getDiffTime(dateFrom, dateTo);
   const ifFavoriteElement = isFavorite ? 'event__favorite-btn--active' : '';
 
-
-  function createOffers(){
-    if(Object.keys(offers).length === 0) {
-      return {};
+  function createOffers() {
+    if (Object.keys(offers).length === 0) {
+      return '';
     }
 
-    const slicedOffers = offers.offers.slice(0, offers.offers.length);
-    return slicedOffers.map((offersItem) => `<li class="event__offer">
-            <span class="event__offer-title">${offersItem.title}</span>
-            &plus;&euro;&nbsp;
-            <span class="event__offer-price">${offersItem.price}</span>
-          </li>`).join('');
+    const selectedOffers = offers.offersArray.filter((offer) => offer.checked);
+
+    return selectedOffers.map((offer) => `
+      <li class="event__offer">
+        <span class="event__offer-title">${offer.title}</span>
+        &plus;&euro;&nbsp;
+        <span class="event__offer-price">${offer.price}</span>
+      </li>
+    `).join('');
   }
 
   return (
