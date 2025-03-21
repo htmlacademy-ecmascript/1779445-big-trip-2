@@ -203,8 +203,34 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelectorAll('.event__offer-checkbox').forEach((offer) => {
       offer.addEventListener('click', this.#offerChangeHandler);
     });
+    this.element.querySelector('.event__field-group--time').addEventListener('click', this.#setDatePicker);
 
   }
+
+  #dateChangeHandler = (userDate, dateType) => {
+    this.updateElement({
+      [dateType]: userDate.toString('yy/MM/dd HH:mm'),
+    });
+  };
+
+  #setDatePicker = (evt) => {
+    if(evt.target.tagName !== 'INPUT'){
+      return;
+    }
+
+    const inputElement = evt.target.closest('.event__input--time');
+    const dateType = inputElement.name === 'event-start-time' ? 'dateFrom' : 'dateTo';
+
+    if (inputElement && !inputElement.flatpickrInstance) {
+      inputElement.flatpickrInstance = flatpickr(inputElement, {
+        dateFormat: 'y/m/d H:i',
+        enableTime: true,
+        ['time_24hr']: false,
+        defaultDate: this._state[dateType],
+        onChange: (selectedDates) => this.#dateChangeHandler(selectedDates[0], dateType), // Передаем dateType
+      });
+    }
+  };
 
   #offerChangeHandler = (evt) => {
     const offerId = evt.target.id.slice(20);
