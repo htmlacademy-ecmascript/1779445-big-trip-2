@@ -1,8 +1,7 @@
 import { render, RenderPosition } from '../framework/render.js';
-import { FilterType, TripSort } from '../const.js';
+import { FilterType, TripSort, UpdateType, UserAction } from '../const.js';
 import { filterByTimePeriod } from '../utils/filter.js';
 import { changeSortType } from '../utils/sort.js';
-import { updateItem } from '../utils/common.js';
 import SortView from '../view/sort-view.js';
 import FilterView from '../view/filter-view.js';
 import TripInfoView from '../view/trip-info-view.js';
@@ -26,11 +25,18 @@ export default class BoardPresenter {
   #pointListComponent = new PointListView();
   #tripInfoComponent = new TripInfoView();
   #noPointsComponent = null;
+
   constructor({ headerElement, mainElement, contorlsElement, pointModel }) {
     this.#headerElement = headerElement;
     this.#mainElement = mainElement;
     this.#contorlsElement = contorlsElement;
     this.#pointModel = pointModel;
+    this.#pointModel.addObserver(this.#handleModelEvent);
+  }
+
+  get tasks() {
+    this.#sortedAndFilteredPoints();
+    return this.#pointModel.points;
   }
 
   init() {
@@ -64,10 +70,6 @@ export default class BoardPresenter {
     render(this.#noPointsComponent, this.#mainElement, AFTEREND);
   };
 
-  #renderPointList() {
-    render(this.#pointListComponent, this.#mainElement, BEFOREEND);
-  }
-
   #renderTripInfo() {
     render(this.#tripInfoComponent, this.#headerElement, AFTERBEGIN);
   }
@@ -76,9 +78,40 @@ export default class BoardPresenter {
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
   };
 
-  #handlePointChange = (updatePoint) => {
-    this.#boardPoints = updateItem(this.#boardPoints, updatePoint);
-    this.#pointPresenters.get(updatePoint.id).init(updatePoint);
+  #handleViewAction = (actionType, updateType, update) => {
+    switch (actionType) {
+      case UserAction.UPDATE_TASK:
+        this.#pointModel.updatePoint(updateType, update);
+        break;
+
+      case UserAction.ADD_TASK:
+        this.#pointModel.addTask(updateType, update);
+        break;
+
+      case UserAction.DELETE_TASK:
+        this.#pointModel.deleteTask(UpdateType, update);
+        break;
+    }
+  };
+
+  #handleModelEvent = (updateType, data) => {
+    switch (updateType) {
+      // Локально обновить одну точку (если изменились незначительные данные).
+      case UpdateType.PATCH:
+        this.#pointPresenters.get(data.id).init(data);
+        break;
+      // Перерисовать весь список (если изменения затрагивают порядок или фильтрацию).
+      case UpdateType.MINOR:
+        this.#clearTaskList();
+        this.#renderAllPoints();
+        break;
+      // Полностью пересоздать интерфейс (если произошли критические изменения, например, загрузка новых данных с сервера).
+      case UpdateType.MAJOR:
+        this.#boardPoints = [...this.#pointModel.points];
+        this.#clearTaskList();
+        this.#renderPointsOrEmptyView();
+        break;
+    }
   };
 
   #renderFilter() {
@@ -103,27 +136,37 @@ export default class BoardPresenter {
   };
 
   #handleSortTypeChange = (sortType) => {
+    if(this.#sortType === sortType){
+      return;
+    }
     this.#sortType = sortType;
     this.#renderAllPoints();
   };
 
-  #renderAllPoints() {
-    this.#pointListComponent.element.innerHTML = '';
-    const points = this.#sortedAndFilteredPoints;
-
-    for (let i = 0; i < points.length; i++) {
-      this.#renderPoint(points[i]);
-    }
-  }
-
   #renderPoint(point) {
     const pointPresenter = new PointPresenter({
       pointListContainer: this.#pointListComponent.element,
-      onDataChange: this.#handlePointChange,
+      onDataChange: this.#handleViewAction,
       onModeChange: this.#hadleModeChange,
     });
 
     pointPresenter.init(point);
     this.#pointPresenters.set(point.id, pointPresenter);
+  }
+
+  #renderAllPoints() {
+    this.#clearTaskList();
+    this.#pointListComponent.element.innerHTML = '';
+    const points = this.#sortedAndFilteredPoints;
+    points.forEach((point) => this.#renderPoint(point));
+  }
+
+  #renderPointList() {
+    render(this.#pointListComponent, this.#mainElement, BEFOREEND);
+  }
+
+  #clearTaskList() {
+    this.#pointPresenters.forEach((presenter) => presenter.destroy());
+    this.#pointPresenters.clear();
   }
 }

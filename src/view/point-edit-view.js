@@ -199,7 +199,7 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formSubmitHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
-    this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
+    this.element.querySelector('.event__input--price').addEventListener('submit', this.#priceChangeHandler);
     this.element.querySelectorAll('.event__offer-checkbox').forEach((offer) => {
       offer.addEventListener('click', this.#offerChangeHandler);
     });
