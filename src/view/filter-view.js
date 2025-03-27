@@ -1,27 +1,28 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { FilterType } from '../const.js';
-import { filterByTimePeriod } from '../utils/filter.js';
+import { FILTERS } from '../utils/filter.js';
 
-function createFilterTemplate(filterPoints) {
+function createFilterTemplate(filterPoints, currentFilter) {
+
   function getEmptyFilter(item) {
-    return filterByTimePeriod(filterPoints, item).length === 0;
+    const element = filterPoints.find((filter) => filter.type === item);
+    return element ? element.points.length === 0 : true;
   }
 
   function getFilterElement() {
-    const filterTypeValues = Object.values(FilterType);
+    const filterTypeValues = Object.values(FILTERS);
 
     return filterTypeValues.map((item) =>
       `<div class="trip-filters__filter">
-        <input id="filter-${item}"
+        <input id="filter-${item.type}"
           class="trip-filters__filter-input  visually-hidden"
           type="radio"
           name="trip-filter"
-          value="${item}"
-          ${item === 'everything' ? 'checked' : ''}
-          ${getEmptyFilter(item) ? 'disabled' : ''}
+          value="${item.type}"
+          ${item.type === currentFilter ? 'checked' : ''}
+          ${getEmptyFilter(item.type) ? 'disabled' : ''}
         >
-        <label class="trip-filters__filter-label"  for="filter-${item}" data-filter-type="${item}">
-          ${item.slice(0, 1).toUpperCase() + item.slice(1)}
+        <label class="trip-filters__filter-label"  for="filter-${item.type}" data-filter-type="${item.type}">
+          ${item.type.slice(0, 1).toUpperCase() + item.type.slice(1)}
         </label>
       </div>`).join('');
   }
@@ -37,16 +38,18 @@ function createFilterTemplate(filterPoints) {
 export default class FilterView extends AbstractView{
   #handleFilterTypeChange = null;
   #filterPoints = null;
+  #currentFilter = null;
 
-  constructor({ points, onFilterTypeChange }){
+  constructor({ filters, onFilterTypeChange, currentFilterType }){
     super();
-    this.#filterPoints = points;
+    this.#filterPoints = filters;
     this.#handleFilterTypeChange = onFilterTypeChange;
+    this.#currentFilter = currentFilterType;
     this.element.addEventListener('click', (evt) => this.#filterTypeChangeHandler(evt));
   }
 
   get template() {
-    return createFilterTemplate(this.#filterPoints);
+    return createFilterTemplate(this.#filterPoints, this.#currentFilter);
   }
 
   #filterTypeChangeHandler(evt) {

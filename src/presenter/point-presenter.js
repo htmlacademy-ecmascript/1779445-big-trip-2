@@ -38,6 +38,7 @@ export default class PointPresenter {
     this.#pointEditComponent = new PointEditView({
       point: this.#point,
       onFormSubmit: this.#handleFormSumbmit,
+      onDeleteClick: this.#handleDeleteClick,
     });
 
     if (prevPointComponent === null || prevPointEditComponent === null) {
@@ -63,6 +64,14 @@ export default class PointPresenter {
       this.#replaceFormToCard();
     }
   }
+
+  #handleDeleteClick = () => {
+    this.#handleDataChange(
+      UserAction.DELETE_TASK,
+      { ...this.#point }
+    );
+    this.destroy();
+  };
 
   destroy() {
     remove(this.#pointComponent);
@@ -98,7 +107,7 @@ export default class PointPresenter {
   #handleFavoriteClick = () => {
     this.#handleDataChange(
       UserAction.UPDATE_TASK,
-      UpdateType.MINOR,
+      UpdateType.PATCH,
       {...this.#point, isFavorite: !this.#point.isFavorite});
   };
 
