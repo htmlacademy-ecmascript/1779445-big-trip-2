@@ -1,6 +1,7 @@
 import { render, replace, remove} from '../framework/render.js';
 import PointView from '../view/point-view.js';
 import PointEditView from '../view/point-edit-view.js';
+import { UpdateType, UserAction } from '../const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -37,6 +38,7 @@ export default class PointPresenter {
     this.#pointEditComponent = new PointEditView({
       point: this.#point,
       onFormSubmit: this.#handleFormSumbmit,
+      onDeleteClick: this.#handleDeleteClick,
     });
 
     if (prevPointComponent === null || prevPointEditComponent === null) {
@@ -63,9 +65,18 @@ export default class PointPresenter {
     }
   }
 
+  #handleDeleteClick = () => {
+    this.#handleDataChange(
+      UserAction.DELETE_TASK,
+      { ...this.#point }
+    );
+    this.destroy();
+  };
+
   destroy() {
     remove(this.#pointComponent);
     remove(this.#pointEditComponent);
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #replaceCardToForm() {
@@ -94,11 +105,19 @@ export default class PointPresenter {
   };
 
   #handleFavoriteClick = () => {
-    this.#handleDataChange({...this.#point, isFavorite: !this.#point.isFavorite});
+    this.#handleDataChange(
+      UserAction.UPDATE_TASK,
+      UpdateType.PATCH,
+      {...this.#point, isFavorite: !this.#point.isFavorite});
   };
 
   #handleFormSumbmit = (point) => {
-    this.#handleDataChange(point);
+    this.#handleDataChange(
+      UserAction.UPDATE_TASK,
+      UpdateType.MINOR,
+      point,
+    );
+
     this.#replaceFormToCard();
   };
 }

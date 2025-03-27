@@ -7,7 +7,7 @@ function getRandomArrayElement(items) {
 }
 
 function getRandomNumber(num = 100) {
-  return Math.floor(Math.random() * num) + 1;
+  return Math.floor(Math.random() * num + 1);
 }
 
 function getDateFormat(dueDate, format) {
@@ -41,14 +41,9 @@ function getDiffTime(dateFromvalue, dateTovalue) {
   return result.trim();
 }
 
-function updateItem(items, update){
-  return items.map((item) => item.id === update.id ? update : item);
-}
-
 export {
   getRandomArrayElement,
   getRandomNumber,
   getDateFormat,
   getDiffTime,
-  updateItem,
 };

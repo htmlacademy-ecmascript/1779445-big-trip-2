@@ -5,7 +5,50 @@ import { EventType, DestinationType } from '../const.js';
 import { mockOffers } from '../mock/offers.js';
 import { mockDestination } from '../mock/destination.js';
 import flatpickr from 'flatpickr';
+import { nanoid } from 'nanoid';
+import he from 'he';
 import 'flatpickr/dist/flatpickr.min.css';
+
+const newEmptyPoint = {
+  basePrice: getRandomNumber(),
+  dateFrom: '2019-07-11T00:00:00Z',
+  dateTo: '2019-07-11T00:00:00Z',
+  destination: {
+    description: 'Chamonix, is a beautiful city, a true asian pearl, with crowded streets.',
+    id: 'TmSPuYNeOfGlG6XHWfWSU',
+    name: 'Chamonix',
+    pictures: [
+      {
+        src: `http://picsum.photos/300/200?r=${getRandomNumber()}`,
+        description: 'Geneva parliament building'
+      }
+    ]
+  },
+  id: nanoid(),
+  isFavorite: false,
+  offers: {type: 'taxi', offersArray: [
+    {
+      id: nanoid(),
+      title: 'Order Uber',
+      price: getRandomNumber(),
+      checked: false
+    },
+    {
+      id: nanoid(),
+      title: 'Order Yandex',
+      price: getRandomNumber(),
+      checked: false,
+    },
+    {
+      id: nanoid(),
+      title: 'Order Maxim',
+      price: getRandomNumber(),
+      checked: false,
+    }
+  ]},
+  type: 'taxi',
+};
+
 
 // Возвращаем template для выбора типа маршрута
 function createEventTypeButtonTemplate(point, type) {
@@ -55,7 +98,7 @@ function createDestinationTemplate(point, type, destination) {
       <label class="event__label  event__type-output" for="event-destination-${point.id}">
         ${type}
       </label>
-      <input class="event__input  event__input--destination" id="event-destination-${point.id}" type="text" name="event-destination" value="${destination.name}" list="destination-list-${point.id}">
+      <input class="event__input  event__input--destination" id="event-destination-${point.id}" type="text" name="event-destination" value="${destination?.name ?? 'New City'}" list="destination-list-${point.id}">
       <datalist id="destination-list-${point.id}">
         ${getDestinationCity()}
       </datalist>
@@ -65,6 +108,7 @@ function createDestinationTemplate(point, type, destination) {
 
 // Получаем и возвращаем template для выбора даты
 function createDateFromToTemplate(dateFrom, dateTo, point) {
+
   return(
     `<div class="event__field-group  event__field-group--time">
       <label class="visually-hidden" for="event-start-time-${point.id}">
@@ -82,14 +126,13 @@ function createDateFromToTemplate(dateFrom, dateTo, point) {
 
 // Получаем и возвращаем template для выбора цены
 function createPriceTemplate(point) {
-
   return(
     `<div class="event__field-group  event__field-group--price">
       <label class="event__label" for="event-price-${point.id}">
         <span class="visually-hidden">Price</span>
         &euro;
       </label>
-      <input class="event__input  event__input--price" id="event-price-${point.id}" type="text" name="event-price" value="${point.basePrice}">
+      <input class="event__input  event__input--price" id="event-price-${point.id}" type="number" name="event-price" value="${isFinite(point.basePrice) ? point.basePrice : 0}">
     </div>`
   );
 }
@@ -122,8 +165,7 @@ function createPhotoTemplate(){
 }
 
 function createEditFormTemplate(point){
-
-  const { dateFrom, dateTo, destination, offers, type } = point;
+  const { dateFrom, dateTo, destination, offers, type, isNewPoint } = point;
   const dateFormattedStart = getDateFormat(dateFrom, DATE_FORMAT_TIME_EDITFORM);
   const dateFormattedEnd = getDateFormat(dateTo, DATE_FORMAT_TIME_EDITFORM);
 
@@ -137,7 +179,7 @@ function createEditFormTemplate(point){
           ${createDateFromToTemplate(dateFormattedStart, dateFormattedEnd, point)}
           ${createPriceTemplate(point)}
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Cancel</button>
+          <button class="event__reset-btn" type="reset">${isNewPoint ? 'Delete' : 'Cancel'}</button>
           <button class="event__rollup-btn" type="button">
             <span class="visually-hidden">
               Open event
@@ -159,7 +201,7 @@ function createEditFormTemplate(point){
               Destination
             </h3>
             <p class="event__destination-description">
-              ${destination.description}
+              ${he.encode(destination.description)}
             </p>
 
             <div class="event__photos-container">
@@ -176,11 +218,21 @@ function createEditFormTemplate(point){
 
 export default class PointEditView extends AbstractStatefulView {
   #handleFormSubmit = null;
+  #handleDeleteClick = null;
+  #isNewPoint = null;
 
-  constructor({ point, onFormSubmit }){
+  constructor({ point, onFormSubmit, onDeleteClick, isNewPoint }){
     super();
+
+    if (!point || Object.keys(point).length === 0) {
+      point = { ...newEmptyPoint, isNewPoint: true };
+    }
+
     this._setState(PointEditView.parsePointToState(point));
     this.#handleFormSubmit = onFormSubmit;
+    this.#handleDeleteClick = onDeleteClick;
+    this.#isNewPoint = isNewPoint;
+
     this._restoreHandlers();
   }
 
@@ -203,8 +255,39 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelectorAll('.event__offer-checkbox').forEach((offer) => {
       offer.addEventListener('click', this.#offerChangeHandler);
     });
-
+    this.element.querySelector('.event__field-group--time').addEventListener('click', this.#setDatePicker);
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteHandler);
   }
+
+  #deleteHandler = () => {
+    this.#handleDeleteClick();
+  };
+
+  #dateChangeHandler = (userDate, dateType) => {
+    this.updateElement({
+      [dateType]: userDate.toString('yy/MM/dd HH:mm'),
+    });
+  };
+
+  #setDatePicker = (evt) => {
+    if(evt.target.tagName !== 'INPUT'){
+      return;
+    }
+
+    const inputElement = evt.target.closest('.event__input--time');
+
+    const dateType = inputElement.name === 'event-start-time' ? 'dateFrom' : 'dateTo';
+
+    if (inputElement && !inputElement.flatpickrInstance) {
+      inputElement.flatpickrInstance = flatpickr(inputElement, {
+        dateFormat: 'y/m/d H:i',
+        enableTime: true,
+        ['time_24hr']: false,
+        defaultDate: this._state[dateType],
+        onChange: (selectedDates) => this.#dateChangeHandler(selectedDates[0], dateType),
+      });
+    }
+  };
 
   #offerChangeHandler = (evt) => {
     const offerId = evt.target.id.slice(20);
@@ -225,14 +308,25 @@ export default class PointEditView extends AbstractStatefulView {
   };
 
   #findOffers = (evt) => mockOffers.find((item) => item.type === evt.target.value);
-  #findDestination = (evt) => mockDestination.find((item) => item.name === evt.target.value);
+
+  #findDestination = (evt) => {
+    const cityName = evt.target.value;
+    return mockDestination.find((dest) => dest.name === cityName) || newEmptyPoint.destination;
+  };
 
   #priceChangeHandler = (evt) => {
-    this.updateElement({...this._state, basePrice: evt.target.value});
+    this.updateElement({ ...this._state, basePrice: evt.target.value });
   };
 
   #typeChangeHandler = (evt) => {
-    this.updateElement({...this._state, type: evt.target.value, offers: this.#findOffers(evt)});
+    const newType = evt.target.value;
+    const newOffers = this.#findOffers(evt);
+
+    this.updateElement({
+      ...this._state,
+      type: newType,
+      offers: newOffers,
+    });
   };
 
   #destinationChangeHandler = (evt) => {
