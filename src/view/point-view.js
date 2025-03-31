@@ -2,9 +2,11 @@ import { getDateFormat, getDiffTime } from '../utils/common.js';
 import { DATE_FORMAT_DAY, DATE_FORMAT_TIME } from '../const.js';
 import AbstractView from '../framework/view/abstract-view.js';
 
-function createPointTemplate(point){
-  const { dateFrom, dateTo, basePrice, destination, isFavorite, offers, type} = point;
+function createPointTemplate(point, offers, destination){
+
+  const { dateFrom, dateTo, basePrice, isFavorite, type } = point;
   const dateFormattedDay = getDateFormat(dateFrom, DATE_FORMAT_DAY);
+
   const dateFormattedStart = getDateFormat(dateFrom, DATE_FORMAT_TIME);
   const dateFormattedEnd = getDateFormat(dateTo, DATE_FORMAT_TIME);
   const diffTime = getDiffTime(dateFrom, dateTo);
@@ -15,7 +17,8 @@ function createPointTemplate(point){
       return '';
     }
 
-    const selectedOffers = offers.offersArray.filter((offer) => offer.checked);
+    const availableOffers = offers.find((offerGroup) => offerGroup.type === point.type)?.offers || [];
+    const selectedOffers = availableOffers.filter((offer) => point.offers.includes(offer.id));
 
     return selectedOffers.map((offer) => `
       <li class="event__offer">
@@ -26,6 +29,11 @@ function createPointTemplate(point){
     `).join('');
   }
 
+  function getDestination() {
+    const destinationElement = destination.find((item) => item.id === point.destination);
+    return destinationElement.name;
+  }
+
   return (
     `<li class="trip-events__item">
       <div class="event">
@@ -33,7 +41,7 @@ function createPointTemplate(point){
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
         </div>
-        <h3 class="event__title">${type} ${destination.name}</h3>
+        <h3 class="event__title">${type} ${getDestination(destination)}</h3>
         <div class="event__schedule">
           <p class="event__time">
             <time class="event__start-time" datetime="${dateFrom}">${dateFormattedStart}</time>
@@ -65,12 +73,16 @@ function createPointTemplate(point){
 
 export default class PointView extends AbstractView {
   #point = null;
+  #destination = null;
+  #offers = null;
   #handleEditClick = null;
   #handleFavoriteClick = null;
 
-  constructor({ point, onEditClick, onFavoriteClick }) {
+  constructor({ point, destination, offers, onEditClick, onFavoriteClick }) {
     super();
     this.#point = point;
+    this.#destination = destination;
+    this.#offers = offers;
     this.#handleEditClick = onEditClick;
     this.#handleFavoriteClick = onFavoriteClick;
 
@@ -79,7 +91,7 @@ export default class PointView extends AbstractView {
   }
 
   get template() {
-    return createPointTemplate(this.#point);
+    return createPointTemplate(this.#point, this.#offers, this.#destination);
   }
 
   #editClickHandler = (evt) => {

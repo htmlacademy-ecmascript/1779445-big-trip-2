@@ -8,6 +8,7 @@ import PointListView from '../view/point-list-view.js';
 import PointPresenter from './point-presenter.js';
 import NoPointsView from '../view/no-points-view.js';
 import NewPointPresenter from './new-points-presenter.js';
+import LoadingView from '../view/loading-view.js';
 
 const { AFTERBEGIN, BEFOREEND, AFTEREND } = RenderPosition;
 
@@ -22,6 +23,8 @@ export default class BoardPresenter {
   #pointPresenters = new Map();
   #pointListComponent = new PointListView();
   #tripInfoComponent = new TripInfoView();
+  #loadingComponent = new LoadingView();
+  #isLoading = true;
   #noPointsComponent = null;
   #filterModel = null;
   #newPointPresenter = null;
@@ -48,19 +51,15 @@ export default class BoardPresenter {
     return changeSortType(filtered.points || [], this.#sortType);
   }
 
-  createPoint() {
-    this.currentSortType = TripSort.DAY;
-    this.#filterModel.setFilter(UpdateType.MAJOR, FILTERS.everything.type);
-    this.#newPointPresenter.init();
-  }
-
   init() {
     this.#boardPoints = [...this.#pointModel.points];
     this.#renderPointsOrEmptyView();
   }
 
   #renderPointsOrEmptyView() {
-    if(this.#boardPoints.length === 0){
+    if(this.#isLoading){
+      this.#renderLoading();
+    } else if(this.#boardPoints.length === 0){
       this.#renderNoPointsComponent();
       this.#renderSort('allDisabled');
     } else {
@@ -70,6 +69,12 @@ export default class BoardPresenter {
       this.#renderPointList();
       this.#renderAllPoints();
     }
+  }
+
+  createPoint() {
+    this.currentSortType = TripSort.DAY;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FILTERS.everything.type);
+    this.#newPointPresenter.init();
   }
 
   #renderNoPointsComponent = () => {
@@ -155,30 +160,44 @@ export default class BoardPresenter {
         this.#clearBoard();
         this.#renderPointsOrEmptyView();
         break;
+
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        this.#boardPoints = this.points;
+        remove(this.#loadingComponent);
+        this.#renderPointsOrEmptyView();
+        break;
     }
   };
+
+  #renderLoading() {
+    render(this.#loadingComponent, this.#mainElement, AFTERBEGIN);
+  }
 
   #clearBoard(){
     remove(this.#noPointsComponent);
     remove(this.#sortComponent);
+    remove(this.#loadingComponent);
     remove(this.#tripInfoComponent);
   }
 
-  #renderPoint(point) {
+  #renderPoint(point, offers, destinations) {
     const pointPresenter = new PointPresenter({
       pointListContainer: this.#pointListComponent.element,
       onDataChange: this.#handleViewAction,
       onModeChange: this.#handleModeChange,
     });
 
-    pointPresenter.init(point);
+    pointPresenter.init(point, offers, destinations);
     this.#pointPresenters.set(point.id, pointPresenter);
   }
 
   #renderAllPoints() {
+    const destinations = this.#pointModel.destinations;
+    const offers = this.#pointModel.offers;
     this.#clearTaskList();
     this.#pointListComponent.element.innerHTML = '';
-    this.points.forEach((point) => this.#renderPoint(point));
+    this.points.forEach((point) => this.#renderPoint(point, destinations, offers));
   }
 
   #renderPointList() {

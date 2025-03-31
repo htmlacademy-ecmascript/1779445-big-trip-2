@@ -11,7 +11,8 @@ function getRandomNumber(num = 100) {
 }
 
 function getDateFormat(dueDate, format) {
-  return dueDate ? dayjs(dueDate).format(format) : '';
+  const date = dueDate ? dayjs(dueDate).format(format) : '';
+  return date;
 }
 
 //Функция для получения разницы времени
@@ -41,9 +42,16 @@ function getDiffTime(dateFromvalue, dateTovalue) {
   return result.trim();
 }
 
+const generateRandomToken = () => {
+  const randomString = Math.random().toString(36).substring(2, 15) +
+                      Math.random().toString(36).substring(2, 15);
+  return btoa(randomString); // Кодируем в base64 (опционально)
+};
+
 export {
   getRandomArrayElement,
   getRandomNumber,
   getDateFormat,
   getDiffTime,
+  generateRandomToken,
 };
