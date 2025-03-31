@@ -11,6 +11,7 @@ function createSortTemplate(all){
       return '';
     }
   }
+
   function getSortElement() {
     const values = Object.values(TripSort);
 
