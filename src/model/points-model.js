@@ -31,7 +31,6 @@ export default class PointModel extends Observable{
         this.#api.pointApiService.offers,
         this.#api.pointApiService.destinations
       ]);
-
       this.#points = points.map((point) => this.#adaptToClient(point));
       this.#offers = offers;
       this.#destinations = destinations;
@@ -44,7 +43,6 @@ export default class PointModel extends Observable{
 
   async updatePoint(updateType, update){
     const index = this.#points.findIndex((point) => point.id === update.id);
-
     if(index === -1){
       throw new Error('Can\t update unsexisting task');
     }
@@ -52,7 +50,6 @@ export default class PointModel extends Observable{
     try {
       const response = await this.#api.pointApiService.updatePoint(update);
       const updatedPoint = this.#adaptToClient(response);
-
       this.#points = [
         ...this.#points.slice(0, index),
         updatedPoint,
@@ -65,16 +62,38 @@ export default class PointModel extends Observable{
     }
   }
 
-  addPoint(updateType, update) {
-    this.#points = [
-      update,
-      ...this.#points,
-    ];
+  async addPoint(updateType, update) {
 
-    this._notify(updateType, update);
+    try {
+      const response = await this.#api.pointApiService.addPoint(update);
+      const newPoint = this.#adaptToClient(response);
+      this.#points = [newPoint, ...this.#points];
+      this._notify(updateType, newPoint);
+    } catch(err) {
+      throw new Error('Can\'t add task');
+    }
   }
 
-  deletePoint(update) {
+  async deletePoint(updateType, update) {
+
+
+    const index = this.#points.findIndex((point) => point.id === update.id);
+
+    if(index === -1){
+      throw new Error('Can\'t delete unexisting task');
+    }
+
+    try {
+      await this.#api.pointApiService.deletePoint(update);
+      this.#points = [
+        ...this.#points.slice(0, index),
+        ...this.#points.slice(index + 1),
+      ];
+      this._notify(updateType);
+    } catch(err) {
+      throw new Error('Can\'t delete task');
+    }
+
     const newPoints = this.#points.filter((point) => point.id !== update.id);
     const isLastPoint = newPoints.length === 0;
 
@@ -85,8 +104,6 @@ export default class PointModel extends Observable{
   }
 
   #adaptToClient(point) {
-    console.log(point);
-
     const adaptedPoint = {
       ...point,
       basePrice: point['base_price'],
