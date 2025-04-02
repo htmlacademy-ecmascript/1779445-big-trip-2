@@ -10,6 +10,7 @@ function createPointTemplate(point, offers, destination){
   const dateFormattedStart = getDateFormat(dateFrom, DATE_FORMAT_TIME);
   const dateFormattedEnd = getDateFormat(dateTo, DATE_FORMAT_TIME);
   const diffTime = getDiffTime(dateFrom, dateTo);
+
   const ifFavoriteElement = isFavorite ? 'event__favorite-btn--active' : '';
 
   function createOffers() {
@@ -51,7 +52,7 @@ function createPointTemplate(point, offers, destination){
           <p class="event__duration">${diffTime}</p>
         </div>
         <p class="event__price">
-          &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
+          &euro;&nbsp;<span class="event__price-value">${Number(basePrice)}</span>
         </p>
         <h4 class="visually-hidden">Offers:</h4>
         <ul class="event__selected-offers">

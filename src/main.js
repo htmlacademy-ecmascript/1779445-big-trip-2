@@ -1,12 +1,15 @@
 import BoardPresenter from '../src/presenter/board-presenter.js';
-import PointModel from '../src/model/point-model.js';
+import PointModel from '../src/model/points-model.js';
 import FilterModel from './model/filter-model.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import NewPointButtonView from './view/new-point-button-view.js';
 import { render } from './framework/render.js';
 import PointApiService from './point-api-service.js';
+import { generateRandomToken } from './utils/common.js';
 
-const AUTHORIZATION = 'Basic er883jdzbdw';
+const AUTH_TOKEN = generateRandomToken();
+
+const AUTHORIZATION = `Basic ${AUTH_TOKEN}`;
 const END_POINT = 'https://22.objects.htmlacademy.pro/big-trip';
 
 const headerElement = document.querySelector('.trip-main');
