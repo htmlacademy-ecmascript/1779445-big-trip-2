@@ -74,7 +74,6 @@ export default class PointPresenter {
   }
 
   #handleDeleteClick = () => {
-
     this.#handleDataChange(
       UserAction.DELETE_POINT,
       UpdateType.MINOR,

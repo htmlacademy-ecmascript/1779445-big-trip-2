@@ -27,7 +27,7 @@ export default class BoardPresenter {
   #boardPoints = [];
   #pointPresenters = new Map();
   #pointListComponent = new PointListView();
-  #tripInfoComponent = new TripInfoView();
+  #tripInfoComponent = null;
   #loadingComponent = new LoadingView();
   #isLoading = true;
   #noPointsComponent = null;
@@ -68,18 +68,61 @@ export default class BoardPresenter {
   }
 
   #renderBoard() {
+    const city = this.getDestinationTrip(this.#pointModel.points, this.#pointModel.destinations, this.#pointModel.offers);
     if(this.#isLoading){
       this.#renderLoading();
-    } else if(this.#boardPoints.length === 0){
-      this.#renderNoPointsComponent();
+    } else if(this.#boardPoints.length === 0 && this.#pointModel.points.length === 0){
       this.#renderSort('allDisabled');
+      this.#renderNoPointsComponent(FILTERS.everything);
+    }else if(this.#boardPoints.length === 0){
+      this.#filterType = this.#filterModel.filter;
+      this.#renderSort('allDisabled');
+      this.#renderNoPointsComponent(this.#filterType);
+      this.#renderTripInfo(city);
     } else {
       this.#renderSort();
-      this.#renderTripInfo();
       this.#handleModeChange();
       this.#renderPointList();
       this.#renderAllPoints();
+      this.#renderTripInfo(city);
     }
+  }
+
+  getDestinationTrip(points, destinations, offers) {
+    const getCityName = (point) => {
+      const dest = destinations.find((d) => d.id === point.destination);
+      return dest?.name || 'Unknown';
+    };
+
+    const getDateFormat = (point) => {
+      if(!point){
+        return;
+      }
+      return point.dateFrom;
+    };
+
+    const getSumAllTrip = () => {
+      // Суммируем базовые цены
+      const sumOfBasePrice = points
+        .map((item) => item.basePrice)
+        .reduce((sum, value) => sum + value, 0);
+
+      // Получаем только непустые массивы offers
+      const selectedOffers = points.flatMap((item) => item.offers);
+      const allAvailbleOffers = offers.flatMap((item) => item.offers);
+      const sumOfOffers = selectedOffers.reduce((sum, value) => sum + allAvailbleOffers.find((item) => item.id === value).price, 0);
+
+      return (sumOfOffers + sumOfBasePrice);
+    };
+
+    const first = getCityName(points[0]);
+    const last = getCityName(points[points.length - 1]);
+    const middle = points.length > 2 ? getCityName(points[Math.floor(points.length / 2)]) : '';
+    const firstDate = getDateFormat(points[0]);
+    const lastDate = getDateFormat(points[points.length - 1]);
+    const sumTrip = getSumAllTrip();
+
+    return {first, last, middle, poitns: points.length, firstDate, lastDate, sumTrip};
   }
 
   createPoint() {
@@ -95,9 +138,17 @@ export default class BoardPresenter {
     render(this.#noPointsComponent, this.#mainElement, AFTEREND);
   };
 
-  #renderTripInfo() {
+  #renderTripInfo(city) {
     remove(this.#tripInfoComponent);
-    this.#tripInfoComponent = new TripInfoView();
+    this.#tripInfoComponent = new TripInfoView({
+      first: city.first,
+      middle: city.middle,
+      last: city.last,
+      points: city.poitns,
+      firstDate: city.firstDate,
+      lastDate: city.lastDate,
+      sumTrip: city.sumTrip,
+    });
     render(this.#tripInfoComponent, this.#headerElement, AFTERBEGIN);
   }
 
@@ -116,7 +167,6 @@ export default class BoardPresenter {
         } catch(err) {
           this.#pointPresenters.get(update.id).setAborting();
         }
-        this.#pointModel.updatePoint(updateType, update);
         break;
 
       case UserAction.ADD_POINT:
@@ -126,18 +176,16 @@ export default class BoardPresenter {
         } catch(err) {
           this.#newPointPresenter.setAborting();
         }
-        this.#pointModel.addPoint(updateType, update);
         break;
 
       case UserAction.DELETE_POINT:
         this.#pointPresenters.get(update.id).setDeleting();
         try {
           await this.#pointModel.deletePoint(updateType, update);
+          this.#boardPoints = [...this.#pointModel.points];
         } catch(err) {
           this.#pointPresenters.get(update.id).setAborting();
         }
-        this.#pointModel.deletePoint(updateType, update);
-        this.#boardPoints = [...this.#pointModel.points];
         break;
     }
     this.#uiBlocker.unblock();
