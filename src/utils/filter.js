@@ -1,4 +1,5 @@
-const todayDay = '2019-08-11';
+import dayjs from 'dayjs';
+const todayDay = dayjs().format('YYYY-MM-DD');
 
 const FILTERS = {
   everything: {

@@ -74,8 +74,7 @@ export default class PointModel extends Observable{
     }
   }
 
-  async deletePoint(updateType, update) {
-
+  async deletePoint(_, update) {
 
     const index = this.#points.findIndex((point) => point.id === update.id);
 
@@ -89,18 +88,15 @@ export default class PointModel extends Observable{
         ...this.#points.slice(0, index),
         ...this.#points.slice(index + 1),
       ];
-      this._notify(updateType);
+      const newPoints = this.#points.filter((point) => point.id !== update.id);
+      const isLastPoint = newPoints.length === 0;
+
+      this._notify(
+        isLastPoint ? UpdateType.MAJOR : UpdateType.MINOR,
+      );
     } catch(err) {
       throw new Error('Can\'t delete task');
     }
-
-    const newPoints = this.#points.filter((point) => point.id !== update.id);
-    const isLastPoint = newPoints.length === 0;
-
-    this.#points = newPoints;
-    this._notify(
-      isLastPoint ? UpdateType.MAJOR : UpdateType.MINOR,
-    );
   }
 
   #adaptToClient(point) {
