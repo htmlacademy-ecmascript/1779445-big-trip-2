@@ -10,6 +10,7 @@ import PointPresenter from './point-presenter.js';
 import NoPointsView from '../view/no-points-view.js';
 import NewPointPresenter from './new-points-presenter.js';
 import LoadingView from '../view/loading-view.js';
+import FailedLoadView from '../view/failed-load-data-view.js';
 
 
 const { AFTERBEGIN, BEFOREEND, AFTEREND } = RenderPosition;
@@ -34,6 +35,8 @@ export default class BoardPresenter {
   #noPointsComponent = null;
   #filterModel = null;
   #newPointPresenter = null;
+  #hasError = false;
+  #failedLoadComponent = null;
 
   #uiBlocker = new UiBlocker({
     lowerLimit: TimeLimit.LOWER_LIMIT,
@@ -73,6 +76,10 @@ export default class BoardPresenter {
   }
 
   #renderBoard() {
+    if (this.#hasError) {
+      this.#renderFailedLoad();
+      return;
+    }
     if(this.#isLoading){
       this.#renderLoading();
     } else if(this.#boardPoints.length === 0 && this.#pointModel.points.length === 0){
@@ -93,6 +100,12 @@ export default class BoardPresenter {
       const city = this.getDestinationTrip(this.#pointModel.points, this.#pointModel.destinations, this.#pointModel.offers);
       this.#renderTripInfo(city);
     }
+  }
+
+  #renderFailedLoad() {
+    this.#clearBoard();
+    this.#failedLoadComponent = new FailedLoadView();
+    render(this.#failedLoadComponent, this.#mainElement, AFTEREND);
   }
 
   getDestinationTrip(points, destinations, offers) {
@@ -264,7 +277,14 @@ export default class BoardPresenter {
 
       case UpdateType.INIT:
         this.#isLoading = false;
-        this.#boardPoints = this.points;
+
+        // Новый код: обработка ошибки
+        this.#hasError = data?.error ?? false;
+
+        if (!this.#hasError) {
+          this.#boardPoints = this.points;
+        }
+
         remove(this.#loadingComponent);
         this.#renderBoard();
         break;
@@ -279,6 +299,7 @@ export default class BoardPresenter {
     remove(this.#noPointsComponent);
     remove(this.#sortComponent);
     remove(this.#loadingComponent);
+    remove(this.#tripInfoComponent);
     remove(this.#tripInfoComponent);
   }
 

@@ -6,6 +6,7 @@ export default class PointModel extends Observable{
   #points = [];
   #offers = [];
   #destinations = [];
+  #isFailed = false;
 
   constructor(pointApiService) {
     super();
@@ -25,21 +26,31 @@ export default class PointModel extends Observable{
   }
 
   async init() {
+    this.#isFailed = false;
+
     try {
       const [points, offers, destinations] = await Promise.all([
         this.#api.pointApiService.points,
         this.#api.pointApiService.offers,
         this.#api.pointApiService.destinations
       ]);
+
       this.#points = points.map((point) => this.#adaptToClient(point));
       // this.#points = this.#points.slice(0,1);
       this.#offers = offers;
       this.#destinations = destinations;
+
     } catch(err) {
+      this.#isFailed = true;
       this.#points = [];
+      this.#offers = [];
+      this.#destinations = [];
     }
 
-    this._notify(UpdateType.INIT);
+    this._notify(UpdateType.INIT, {
+      error: this.#isFailed,
+      isFilterChange: false,
+    });
   }
 
   async updatePoint(updateType, update){
