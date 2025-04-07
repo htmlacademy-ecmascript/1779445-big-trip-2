@@ -109,11 +109,12 @@ export default class BoardPresenter {
       return dest?.name || 'Unknown';
     };
 
-    const getDateFormat = (point) => {
+    const getDateFormat = (point, time) => {
       if(!point){
         return;
       }
-      return point.dateFrom;
+
+      return time === 'first' ? point.dateFrom : point.dateTo;
     };
 
     const getSumAllTrip = () => {
@@ -133,8 +134,8 @@ export default class BoardPresenter {
     const first = getCityName(sortedPoints[0]);
     const last = getCityName(sortedPoints[sortedPoints.length - 1]);
     const middle = sortedPoints.length > 2 ? getCityName(sortedPoints[Math.floor(sortedPoints.length / 2)]) : '';
-    const firstDate = getDateFormat(sortedPoints[0]);
-    const lastDate = getDateFormat(sortedPoints[sortedPoints.length - 1]);
+    const firstDate = getDateFormat(sortedPoints[0], 'first');
+    const lastDate = getDateFormat(sortedPoints[sortedPoints.length - 1], 'end');
     const sumTrip = getSumAllTrip();
 
     return {first, last, middle, poitns: sortedPoints.length, firstDate, lastDate, sumTrip};
