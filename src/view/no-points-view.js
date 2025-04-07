@@ -2,10 +2,9 @@ import AbstractView from '../framework/view/abstract-view';
 import { FilterEmptyPoints } from '../const';
 
 function createNoPointsViewTemplate(filter) {
-
   return (
     `<p class="trip-events__msg">
-    ${FilterEmptyPoints[filter.filter.toUpperCase()]}
+    ${FilterEmptyPoints[filter.toUpperCase()]}
     </p>`
   );
 }
@@ -13,9 +12,9 @@ function createNoPointsViewTemplate(filter) {
 export default class NoPointsView extends AbstractView {
   #filterValue = null;
 
-  constructor({filterType}){
+  constructor({filter}){
     super();
-    this.#filterValue = filterType;
+    this.#filterValue = filter;
   }
 
   get template() {

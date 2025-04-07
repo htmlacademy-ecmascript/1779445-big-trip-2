@@ -7,19 +7,23 @@ const Method = {
   DELETE: 'DELETE',
 };
 export default class PointApiService extends ApiService {
+  constructor(END_POINT, AUTHORIZATION){
+    super(END_POINT, AUTHORIZATION);
+  }
+
   get points() {
     return this._load({url: 'points'})
-      .then((response) => ApiService.parseResponse(response));
+      .then(ApiService.parseResponse);
   }
 
   get offers() {
     return this._load({url: 'offers'})
-      .then((response) => ApiService.parseResponse(response));
+      .then(ApiService.parseResponse);
   }
 
   get destinations() {
     return this._load({url: 'destinations'})
-      .then((response) => ApiService.parseResponse(response));
+      .then(ApiService.parseResponse);
   }
 
   async updatePoint(point) {

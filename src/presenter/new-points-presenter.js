@@ -10,12 +10,14 @@ export default class NewPointPresenter {
   #handleDestroy = null;
   #pointEditComponent = null;
   #pointsModel = null;
+  #noPoint = null;
 
-  constructor({ pointListContainer, onDataChange, onDestroy, pointsModel }) {
+  constructor({ pointListContainer, onDataChange, onDestroy, pointsModel, noPoint }) {
     this.#pointListContainer = pointListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleDestroy = onDestroy;
     this.#pointsModel = pointsModel;
+    this.#noPoint = noPoint;
   }
 
   init() {
@@ -38,6 +40,10 @@ export default class NewPointPresenter {
 
   destroy() {
     this.#handleDestroy();
+
+    if(this.#pointsModel.points.length === 0) {
+      this.#noPoint();
+    }
 
     remove(this.#pointEditComponent);
     this.#pointEditComponent = null;
@@ -80,9 +86,8 @@ export default class NewPointPresenter {
 
   #escKeyDownHandler = (evt) => {
     if(evt.key === 'Escape' || evt.key === 'Esc') {
-      evt.preventDEfault();
+      evt.preventDefault();
       this.destroy();
     }
   };
-
 }

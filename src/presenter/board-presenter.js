@@ -50,6 +50,10 @@ export default class BoardPresenter {
       onDataChange: this.#handleViewAction,
       onDestroy: onNewPointDestroy,
       pointsModel: this.#pointModel,
+      noPoint: () => {
+        this.#renderSort('allDisabled');
+        this.#renderNoPointsComponent(FILTERS.everything);
+      }
     });
 
     this.#pointModel.addObserver(this.#handleModelEvent);
@@ -68,7 +72,6 @@ export default class BoardPresenter {
   }
 
   #renderBoard() {
-    const city = this.getDestinationTrip(this.#pointModel.points, this.#pointModel.destinations, this.#pointModel.offers);
     if(this.#isLoading){
       this.#renderLoading();
     } else if(this.#boardPoints.length === 0 && this.#pointModel.points.length === 0){
@@ -77,19 +80,30 @@ export default class BoardPresenter {
     }else if(this.#boardPoints.length === 0){
       this.#filterType = this.#filterModel.filter;
       this.#renderSort('allDisabled');
-      this.#renderNoPointsComponent(this.#filterType);
+      this.#renderNoPointsComponent(FILTERS[this.#filterType]);
+      const city = this.getDestinationTrip(this.#pointModel.points, this.#pointModel.destinations, this.#pointModel.offers);
       this.#renderTripInfo(city);
     } else {
+      this.#clearBoard();
       this.#renderSort();
       this.#handleModeChange();
       this.#renderPointList();
       this.#renderAllPoints();
+      const city = this.getDestinationTrip(this.#pointModel.points, this.#pointModel.destinations, this.#pointModel.offers);
       this.#renderTripInfo(city);
     }
   }
 
   getDestinationTrip(points, destinations, offers) {
+    const sortedPoints = [...points].sort((a, b) =>
+      new Date(a.dateFrom) - new Date(b.dateFrom)
+    );
+
     const getCityName = (point) => {
+      if (!point || !point.destination) {
+        return 'Unknown'; // Если destination не определен, возвращаем 'Unknown'
+      }
+
       const dest = destinations.find((d) => d.id === point.destination);
       return dest?.name || 'Unknown';
     };
@@ -103,31 +117,32 @@ export default class BoardPresenter {
 
     const getSumAllTrip = () => {
       // Суммируем базовые цены
-      const sumOfBasePrice = points
+      const sumOfBasePrice = sortedPoints
         .map((item) => item.basePrice)
         .reduce((sum, value) => sum + value, 0);
 
       // Получаем только непустые массивы offers
-      const selectedOffers = points.flatMap((item) => item.offers);
+      const selectedOffers = sortedPoints.flatMap((item) => item.offers);
       const allAvailbleOffers = offers.flatMap((item) => item.offers);
       const sumOfOffers = selectedOffers.reduce((sum, value) => sum + allAvailbleOffers.find((item) => item.id === value).price, 0);
 
       return (sumOfOffers + sumOfBasePrice);
     };
 
-    const first = getCityName(points[0]);
-    const last = getCityName(points[points.length - 1]);
-    const middle = points.length > 2 ? getCityName(points[Math.floor(points.length / 2)]) : '';
-    const firstDate = getDateFormat(points[0]);
-    const lastDate = getDateFormat(points[points.length - 1]);
+    const first = getCityName(sortedPoints[0]);
+    const last = getCityName(sortedPoints[sortedPoints.length - 1]);
+    const middle = sortedPoints.length > 2 ? getCityName(sortedPoints[Math.floor(sortedPoints.length / 2)]) : '';
+    const firstDate = getDateFormat(sortedPoints[0]);
+    const lastDate = getDateFormat(sortedPoints[sortedPoints.length - 1]);
     const sumTrip = getSumAllTrip();
 
-    return {first, last, middle, poitns: points.length, firstDate, lastDate, sumTrip};
+    return {first, last, middle, poitns: sortedPoints.length, firstDate, lastDate, sumTrip};
   }
 
-  createPoint() {
+  createPoint () {
     this.currentSortType = TripSort.DAY;
     this.#filterModel.setFilter(UpdateType.MAJOR, FILTERS.everything.type);
+
     this.#newPointPresenter.init();
   }
 
@@ -135,6 +150,7 @@ export default class BoardPresenter {
     this.#noPointsComponent = new NoPointsView({
       filter:  this.#filterType,
     });
+
     render(this.#noPointsComponent, this.#mainElement, AFTEREND);
   };
 
@@ -171,22 +187,32 @@ export default class BoardPresenter {
 
       case UserAction.ADD_POINT:
         this.#newPointPresenter.setSaving();
-        try {
-          await this.#pointModel.addPoint(updateType, update);
-        } catch(err) {
-          this.#newPointPresenter.setAborting();
-        }
+
+        // setTimeout(async () => {
+          try {
+            await this.#pointModel.addPoint(updateType, update);
+          } catch (err) {
+            this.#newPointPresenter.setAborting();
+          }
+        // }, 3000);
         break;
 
-      case UserAction.DELETE_POINT:
-        this.#pointPresenters.get(update.id).setDeleting();
+
+      case UserAction.DELETE_POINT: {
+        const presenter = this.#pointPresenters.get(update.id);
+        presenter.setDeleting();
+
+        // setTimeout(async () => {
         try {
           await this.#pointModel.deletePoint(updateType, update);
           this.#boardPoints = [...this.#pointModel.points];
+          this.#pointPresenters.delete();
         } catch(err) {
-          this.#pointPresenters.get(update.id).setAborting();
+          presenter.setAborting();
         }
+      // }, 3000);
         break;
+      }
     }
     this.#uiBlocker.unblock();
   };
@@ -211,13 +237,18 @@ export default class BoardPresenter {
   #handleModelEvent = (updateType, data) => {
     if (data?.isFilterChange) {
       this.#sortType = TripSort.DAY;
+      this.#clearBoard();
       this.#clearPointList();
-      remove(this.#sortComponent);
-      this.#sortComponent.element.innerHTML = '';
-      this.#renderSort();
       this.#renderAllPoints();
+
+      if(this.#pointModel.points.length !== 0){
+        this.#renderSort();
+        const city = this.getDestinationTrip(this.#pointModel.points, this.#pointModel.destinations, this.#pointModel.offers);
+        this.#renderTripInfo(city);
+      }
       return;
     }
+
 
     switch (updateType) {
       // Локально обновить одну точку (если изменились незначительные данные).
@@ -227,12 +258,6 @@ export default class BoardPresenter {
         break;
       // Перерисовать весь список (если изменения затрагивают порядок или фильтрацию).
       case UpdateType.MINOR:
-        this.#boardPoints = this.points;
-        this.#clearPointList();
-        this.#clearBoard();
-        this.#renderBoard();
-        break;
-      // Полностью пересоздать интерфейс (если произошли критические изменения, например, загрузка новых данных с сервера).
       case UpdateType.MAJOR:
         this.#boardPoints = this.points;
         this.#clearPointList();
