@@ -66,18 +66,24 @@ export default class NewPointPresenter {
         isDeleting: false,
       });
     };
-
+    this.#pointEditComponent.setSaving(false);
     this.#pointEditComponent.shake(resetFormState);
   }
 
-  #handleFormSubmit = (point) => {
-    this.#handleDataChange(
-      UserAction.ADD_POINT,
-      UpdateType.MINOR,
-      point,
-    );
-
-    this.destroy();
+  #handleFormSubmit = async (point) => {
+    try {
+      this.#pointEditComponent.setSaving(true);
+      const response = await this.#handleDataChange(
+        UserAction.ADD_POINT,
+        UpdateType.MINOR,
+        point,
+      );
+      if(response){
+        this.destroy();
+      }
+    } catch {
+      this.#pointEditComponent.setSaving(false);
+    }
   };
 
   #handleDeleteClick = () => {

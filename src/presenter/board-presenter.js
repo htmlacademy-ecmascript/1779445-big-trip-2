@@ -11,6 +11,7 @@ import NoPointsView from '../view/no-points-view.js';
 import NewPointPresenter from './new-points-presenter.js';
 import LoadingView from '../view/loading-view.js';
 
+
 const { AFTERBEGIN, BEFOREEND, AFTEREND } = RenderPosition;
 
 const TimeLimit = {
@@ -187,30 +188,25 @@ export default class BoardPresenter {
 
       case UserAction.ADD_POINT:
         this.#newPointPresenter.setSaving();
-
-        // setTimeout(async () => {
-          try {
-            await this.#pointModel.addPoint(updateType, update);
-          } catch (err) {
-            this.#newPointPresenter.setAborting();
-          }
-        // }, 3000);
+        try {
+          await this.#pointModel.addPoint(updateType, update);
+        } catch (err) {
+          this.#newPointPresenter.setAborting();
+        }
         break;
 
 
       case UserAction.DELETE_POINT: {
         const presenter = this.#pointPresenters.get(update.id);
         presenter.setDeleting();
-
-        // setTimeout(async () => {
         try {
           await this.#pointModel.deletePoint(updateType, update);
           this.#boardPoints = [...this.#pointModel.points];
-          this.#pointPresenters.delete();
+          this.#pointPresenters.delete(update.id);
+          presenter.destroy();
         } catch(err) {
           presenter.setAborting();
         }
-      // }, 3000);
         break;
       }
     }
