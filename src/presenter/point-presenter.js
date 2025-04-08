@@ -47,6 +47,7 @@ export default class PointPresenter {
       offers: this.#offers,
       onFormSubmit: this.#handleFormSumbmit,
       onDeleteClick: this.#handleDeleteClick,
+      onRollUpClick: this.#handleClickRollUp,
     });
 
     if (prevPointComponent === null || prevPointEditComponent === null) {
@@ -73,13 +74,17 @@ export default class PointPresenter {
     }
   }
 
-  #handleDeleteClick = () => {
-    this.#handleDataChange(
-      UserAction.DELETE_POINT,
-      UpdateType.MINOR,
-      { ...this.#point }
-    );
-    this.destroy();
+  #handleDeleteClick = async() => {
+    try {
+      this.#pointEditComponent.setDeleting(true);
+      await this.#handleDataChange(
+        UserAction.DELETE_POINT,
+        UpdateType.MINOR,
+        { ...this.#point }
+      );
+    }catch {
+      this.#pointEditComponent.setDeleting(false);
+    }
   };
 
   destroy() {
@@ -106,11 +111,26 @@ export default class PointPresenter {
     }
   }
 
+  setAborting() {
+    const resetFormState = () => {
+      this.#pointEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+    this.#pointEditComponent.setDeleting(false);
+    this.#pointEditComponent.setSaving(false);
+
+    this.#pointEditComponent.shake(resetFormState);
+  }
+
   #replaceCardToForm() {
     replace(this.#pointEditComponent, this.#pointComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
     this.#handleModeChange();
     this.#mode = Mode.EDITING;
+
   }
 
   #replaceFormToCard() {
@@ -142,14 +162,24 @@ export default class PointPresenter {
     );
   };
 
-  #handleFormSumbmit = (point) => {
+  #handleFormSumbmit = async(point) => {
+    try {
+      this.#pointEditComponent.setSaving(true);
+      const response = await this.#handleDataChange(
+        UserAction.UPDATE_POINT,
+        UpdateType.MINOR,
+        point,
+      );
+      if(response){
+        this.#replaceFormToCard();
+      }
+    } catch {
+      this.#pointEditComponent.setSaving(false);
+    }
+  };
 
-    this.#handleDataChange(
-      UserAction.UPDATE_POINT,
-      UpdateType.MINOR,
-      point,
-    );
-
+  #handleClickRollUp = () => {
     this.#replaceFormToCard();
   };
 }
+

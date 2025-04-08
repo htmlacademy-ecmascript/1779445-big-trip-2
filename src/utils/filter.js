@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-const todayDay = dayjs().format('YYYY-MM-DD');
 
 const FILTERS = {
   everything: {
@@ -9,19 +8,19 @@ const FILTERS = {
   },
   future: {
     type: 'future',
-    filterFn: (points) => points.filter((item) => item.dateFrom.slice(0, 10) > todayDay),
-    isChecked: false,
-  },
-  past: {
-    type: 'past',
-    filterFn: (points) => points.filter((item) => item.dateFrom.slice(0, 10) < todayDay),
+    filterFn: (points) => points.filter((point) => dayjs(point.dateFrom).isAfter(dayjs())),
     isChecked: false,
   },
   present: {
     type: 'present',
-    filterFn: (points) => points.filter((item) => item.dateFrom.slice(0, 10) === todayDay),
+    filterFn: (points) => points.filter((point) => dayjs(point.dateFrom).isBefore(dayjs()) && dayjs(point.dateTo).isAfter(dayjs())),
     isChecked: false,
-  }
+  },
+  past: {
+    type: 'past',
+    filterFn: (points) => points.filter((point) => dayjs(point.dateTo).isBefore(dayjs())),
+    isChecked: false,
+  },
 };
 
 function filterByTimePeriod(points, target = 'everything') {

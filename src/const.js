@@ -1,5 +1,5 @@
 const DATE_FORMAT_DAY = 'MMM D';
-const DATE_FORMAT_TIME = 'MM:DD';
+const DATE_FORMAT_TIME = 'HH:mm';
 const DATE_FORMAT_TIME_EDITFORM = 'YY/MM/DD hh:mm';
 
 const TripSort = {

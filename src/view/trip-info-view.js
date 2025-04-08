@@ -1,5 +1,4 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { DATE_FORMAT_DAY } from '../const.js';
 import dayjs from 'dayjs';
 
 function createInfoTemplate(first, middle, last, points, firstDate, lastDate, sumTrip){
@@ -23,7 +22,7 @@ function createInfoTemplate(first, middle, last, points, firstDate, lastDate, su
     `<section class="trip-main__trip-info  trip-info">
       <div class="trip-info__main">
         <h1 class="trip-info__title">${getcityTemplate()}</h1>
-        <p class="trip-info__dates">${dayjs(firstDate).format(DATE_FORMAT_DAY)}&nbsp;&mdash;&nbsp;${dayjs(lastDate).format(DATE_FORMAT_DAY)}</p>
+        <p class="trip-info__dates">${dayjs(firstDate).format('D MMM')}&nbsp;&mdash;&nbsp;${dayjs(lastDate).format('D MMM')}</p>
       </div>
 
       <p class="trip-info__cost">

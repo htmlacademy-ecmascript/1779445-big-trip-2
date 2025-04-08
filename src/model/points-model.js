@@ -6,6 +6,7 @@ export default class PointModel extends Observable{
   #points = [];
   #offers = [];
   #destinations = [];
+  #isFailed = false;
 
   constructor(pointApiService) {
     super();
@@ -25,20 +26,31 @@ export default class PointModel extends Observable{
   }
 
   async init() {
+    this.#isFailed = false;
+
     try {
       const [points, offers, destinations] = await Promise.all([
         this.#api.pointApiService.points,
         this.#api.pointApiService.offers,
         this.#api.pointApiService.destinations
       ]);
+
       this.#points = points.map((point) => this.#adaptToClient(point));
+      // this.#points = this.#points.slice(0,6);
       this.#offers = offers;
       this.#destinations = destinations;
+
     } catch(err) {
+      this.#isFailed = true;
       this.#points = [];
+      this.#offers = [];
+      this.#destinations = [];
     }
 
-    this._notify(UpdateType.INIT);
+    this._notify(UpdateType.INIT, {
+      error: this.#isFailed,
+      isFilterChange: false,
+    });
   }
 
   async updatePoint(updateType, update){
@@ -63,7 +75,6 @@ export default class PointModel extends Observable{
   }
 
   async addPoint(updateType, update) {
-
     try {
       const response = await this.#api.pointApiService.addPoint(update);
       const newPoint = this.#adaptToClient(response);
@@ -84,15 +95,19 @@ export default class PointModel extends Observable{
 
     try {
       await this.#api.pointApiService.deletePoint(update);
+
+
       this.#points = [
         ...this.#points.slice(0, index),
         ...this.#points.slice(index + 1),
       ];
+
       const newPoints = this.#points.filter((point) => point.id !== update.id);
       const isLastPoint = newPoints.length === 0;
 
       this._notify(
         isLastPoint ? UpdateType.MAJOR : UpdateType.MINOR,
+        update,
       );
     } catch(err) {
       throw new Error('Can\'t delete task');

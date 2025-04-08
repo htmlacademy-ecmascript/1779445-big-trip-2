@@ -10,6 +10,8 @@ import PointPresenter from './point-presenter.js';
 import NoPointsView from '../view/no-points-view.js';
 import NewPointPresenter from './new-points-presenter.js';
 import LoadingView from '../view/loading-view.js';
+import FailedLoadView from '../view/failed-load-data-view.js';
+
 
 const { AFTERBEGIN, BEFOREEND, AFTEREND } = RenderPosition;
 
@@ -33,6 +35,8 @@ export default class BoardPresenter {
   #noPointsComponent = null;
   #filterModel = null;
   #newPointPresenter = null;
+  #hasError = false;
+  #failedLoadComponent = null;
 
   #uiBlocker = new UiBlocker({
     lowerLimit: TimeLimit.LOWER_LIMIT,
@@ -50,6 +54,10 @@ export default class BoardPresenter {
       onDataChange: this.#handleViewAction,
       onDestroy: onNewPointDestroy,
       pointsModel: this.#pointModel,
+      noPoint: () => {
+        this.#renderSort('allDisabled');
+        this.#renderNoPointsComponent(FILTERS.everything);
+      }
     });
 
     this.#pointModel.addObserver(this.#handleModelEvent);
@@ -68,66 +76,89 @@ export default class BoardPresenter {
   }
 
   #renderBoard() {
-    const city = this.getDestinationTrip(this.#pointModel.points, this.#pointModel.destinations, this.#pointModel.offers);
+    if (this.#hasError) {
+      this.#renderFailedLoad();
+      return;
+    }
     if(this.#isLoading){
       this.#renderLoading();
     } else if(this.#boardPoints.length === 0 && this.#pointModel.points.length === 0){
+      this.#filterType = this.#filterModel.filter;
       this.#renderSort('allDisabled');
       this.#renderNoPointsComponent(FILTERS.everything);
     }else if(this.#boardPoints.length === 0){
       this.#filterType = this.#filterModel.filter;
       this.#renderSort('allDisabled');
-      this.#renderNoPointsComponent(this.#filterType);
+      this.#renderNoPointsComponent(FILTERS[this.#filterType]);
+      const city = this.getDestinationTrip(this.#pointModel.points, this.#pointModel.destinations, this.#pointModel.offers);
       this.#renderTripInfo(city);
     } else {
+      this.#clearBoard();
       this.#renderSort();
       this.#handleModeChange();
       this.#renderPointList();
       this.#renderAllPoints();
+      const city = this.getDestinationTrip(this.#pointModel.points, this.#pointModel.destinations, this.#pointModel.offers);
       this.#renderTripInfo(city);
     }
   }
 
+  #renderFailedLoad() {
+    this.#clearBoard();
+    this.#failedLoadComponent = new FailedLoadView();
+    render(this.#failedLoadComponent, this.#mainElement, AFTEREND);
+  }
+
   getDestinationTrip(points, destinations, offers) {
+    const sortedPoints = [...points].sort((a, b) =>
+      new Date(a.dateFrom) - new Date(b.dateFrom)
+    );
+
     const getCityName = (point) => {
+      if (!point || !point.destination) {
+        return 'Unknown'; // Если destination не определен, возвращаем 'Unknown'
+      }
+
       const dest = destinations.find((d) => d.id === point.destination);
       return dest?.name || 'Unknown';
     };
 
-    const getDateFormat = (point) => {
+    const getDateFormat = (point, time) => {
       if(!point){
         return;
       }
-      return point.dateFrom;
+
+      return time === 'first' ? point.dateFrom : point.dateTo;
     };
 
     const getSumAllTrip = () => {
       // Суммируем базовые цены
-      const sumOfBasePrice = points
+      const sumOfBasePrice = sortedPoints
         .map((item) => item.basePrice)
         .reduce((sum, value) => sum + value, 0);
 
       // Получаем только непустые массивы offers
-      const selectedOffers = points.flatMap((item) => item.offers);
+      const selectedOffers = sortedPoints.flatMap((item) => item.offers);
       const allAvailbleOffers = offers.flatMap((item) => item.offers);
       const sumOfOffers = selectedOffers.reduce((sum, value) => sum + allAvailbleOffers.find((item) => item.id === value).price, 0);
 
       return (sumOfOffers + sumOfBasePrice);
     };
 
-    const first = getCityName(points[0]);
-    const last = getCityName(points[points.length - 1]);
-    const middle = points.length > 2 ? getCityName(points[Math.floor(points.length / 2)]) : '';
-    const firstDate = getDateFormat(points[0]);
-    const lastDate = getDateFormat(points[points.length - 1]);
+    const first = getCityName(sortedPoints[0]);
+    const last = getCityName(sortedPoints[sortedPoints.length - 1]);
+    const middle = sortedPoints.length > 2 ? getCityName(sortedPoints[Math.floor(sortedPoints.length / 2)]) : '';
+    const firstDate = getDateFormat(sortedPoints[0], 'first');
+    const lastDate = getDateFormat(sortedPoints[sortedPoints.length - 1], 'end');
     const sumTrip = getSumAllTrip();
 
-    return {first, last, middle, poitns: points.length, firstDate, lastDate, sumTrip};
+    return {first, last, middle, poitns: sortedPoints.length, firstDate, lastDate, sumTrip};
   }
 
-  createPoint() {
+  createPoint () {
     this.currentSortType = TripSort.DAY;
     this.#filterModel.setFilter(UpdateType.MAJOR, FILTERS.everything.type);
+
     this.#newPointPresenter.init();
   }
 
@@ -135,6 +166,7 @@ export default class BoardPresenter {
     this.#noPointsComponent = new NoPointsView({
       filter:  this.#filterType,
     });
+
     render(this.#noPointsComponent, this.#mainElement, AFTEREND);
   };
 
@@ -173,20 +205,25 @@ export default class BoardPresenter {
         this.#newPointPresenter.setSaving();
         try {
           await this.#pointModel.addPoint(updateType, update);
-        } catch(err) {
+        } catch (err) {
           this.#newPointPresenter.setAborting();
         }
         break;
 
-      case UserAction.DELETE_POINT:
-        this.#pointPresenters.get(update.id).setDeleting();
+
+      case UserAction.DELETE_POINT: {
+        const presenter = this.#pointPresenters.get(update.id);
+        presenter.setDeleting();
         try {
           await this.#pointModel.deletePoint(updateType, update);
           this.#boardPoints = [...this.#pointModel.points];
+          this.#pointPresenters.delete(update.id);
+          presenter.destroy();
         } catch(err) {
-          this.#pointPresenters.get(update.id).setAborting();
+          presenter.setAborting();
         }
         break;
+      }
     }
     this.#uiBlocker.unblock();
   };
@@ -211,13 +248,18 @@ export default class BoardPresenter {
   #handleModelEvent = (updateType, data) => {
     if (data?.isFilterChange) {
       this.#sortType = TripSort.DAY;
+      this.#clearBoard();
       this.#clearPointList();
-      remove(this.#sortComponent);
-      this.#sortComponent.element.innerHTML = '';
-      this.#renderSort();
       this.#renderAllPoints();
+
+      if(this.#pointModel.points.length !== 0){
+        this.#renderSort();
+        const city = this.getDestinationTrip(this.#pointModel.points, this.#pointModel.destinations, this.#pointModel.offers);
+        this.#renderTripInfo(city);
+      }
       return;
     }
+
 
     switch (updateType) {
       // Локально обновить одну точку (если изменились незначительные данные).
@@ -227,12 +269,6 @@ export default class BoardPresenter {
         break;
       // Перерисовать весь список (если изменения затрагивают порядок или фильтрацию).
       case UpdateType.MINOR:
-        this.#boardPoints = this.points;
-        this.#clearPointList();
-        this.#clearBoard();
-        this.#renderBoard();
-        break;
-      // Полностью пересоздать интерфейс (если произошли критические изменения, например, загрузка новых данных с сервера).
       case UpdateType.MAJOR:
         this.#boardPoints = this.points;
         this.#clearPointList();
@@ -242,7 +278,14 @@ export default class BoardPresenter {
 
       case UpdateType.INIT:
         this.#isLoading = false;
-        this.#boardPoints = this.points;
+
+        // Новый код: обработка ошибки
+        this.#hasError = data?.error ?? false;
+
+        if (!this.#hasError) {
+          this.#boardPoints = this.points;
+        }
+
         remove(this.#loadingComponent);
         this.#renderBoard();
         break;
@@ -257,6 +300,7 @@ export default class BoardPresenter {
     remove(this.#noPointsComponent);
     remove(this.#sortComponent);
     remove(this.#loadingComponent);
+    remove(this.#tripInfoComponent);
     remove(this.#tripInfoComponent);
   }
 
