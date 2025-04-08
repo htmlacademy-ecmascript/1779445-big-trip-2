@@ -1,6 +1,8 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-dayjs.extend(duration); // Расширяем dayjs плагином
+
+dayjs.extend(duration);
+
 
 function getRandomArrayElement(items) {
   return items[Math.floor(Math.random() * items.length)];
@@ -21,17 +23,21 @@ function getDiffTime(dateFromvalue, dateTovalue) {
   const dateFrom = dayjs(`${dateFromvalue.replace(/\.\d+Z$/, '')}Z`);
   const dateTo = dayjs(`${dateTovalue.replace(/\.\d+Z$/, '')}Z`);
 
-  // Вычисляем разницу в виде объекта duration
-  const diff = dayjs.duration(dateTo.diff(dateFrom));
+  // Разница в миллисекундах
+  const diffMs = dateTo.diff(dateFrom);
 
-  // Извлекаем дни, часы и минуты
-  const days = diff.days();
-  const hours = diff.hours();
-  const mins = diff.minutes();
+  // Создаём duration
+  const diff = dayjs.duration(diffMs);
+
+  const totalMinutes = Math.floor(diff.asMinutes());
+  const totalDays = Math.floor(diff.asDays());
+
+  const days = totalDays;
+  const hours = Math.floor((totalMinutes - days * 24 * 60) / 60);
+  const mins = totalMinutes % 60;
 
   // Форматируем результат
   let result = '';
-
   if (days > 0) {
     result += `${String(days).padStart(2, '0')}D `;
   }
@@ -39,6 +45,7 @@ function getDiffTime(dateFromvalue, dateTovalue) {
     result += `${String(hours).padStart(2, '0')}H `;
   }
   result += `${String(mins).padStart(2, '0')}M`;
+
   return result.trim();
 }
 

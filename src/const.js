@@ -1,5 +1,5 @@
 const DATE_FORMAT_DAY = 'MMM D';
-const DATE_FORMAT_TIME = 'MM:DD';
+const DATE_FORMAT_TIME = 'HH:mm';
 const DATE_FORMAT_TIME_EDITFORM = 'YY/MM/DD hh:mm';
 
 const TripSort = {
@@ -40,7 +40,6 @@ const UserAction = {
   UPDATE_POINT: 'UPDATE_POINT',
   ADD_POINT: 'ADD_POINT',
   DELETE_POINT: 'DELETE_POINT',
-  LOAD_ERROR: 'LOAD_ERROR',
 };
 
 const UpdateType = {

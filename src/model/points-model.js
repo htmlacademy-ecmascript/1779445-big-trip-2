@@ -36,7 +36,7 @@ export default class PointModel extends Observable{
       ]);
 
       this.#points = points.map((point) => this.#adaptToClient(point));
-      // this.#points = this.#points.slice(0,1);
+      // this.#points = this.#points.slice(0,6);
       this.#offers = offers;
       this.#destinations = destinations;
 
