@@ -83,6 +83,7 @@ export default class BoardPresenter {
     if(this.#isLoading){
       this.#renderLoading();
     } else if(this.#boardPoints.length === 0 && this.#pointModel.points.length === 0){
+      this.#filterType = this.#filterModel.filter;
       this.#renderSort('allDisabled');
       this.#renderNoPointsComponent(FILTERS.everything);
     }else if(this.#boardPoints.length === 0){
