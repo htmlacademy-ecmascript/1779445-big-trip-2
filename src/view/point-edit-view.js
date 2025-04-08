@@ -24,13 +24,13 @@ function createEventTypeButtonTemplate(point, type, isDisabled) {
 
   return (
     `<div class="event__type-wrapper">
-      <label class="event__type  event__type-btn" for="event-type-toggle">
+      <label class="event__type  event__type-btn" for="event-type-toggle-${point.id || ''}">
         <span class="visually-hidden">
           Choose event type
         </span>
         <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
       </label>
-      <input class="event__type-toggle  visually-hidden" id="event-type-toggle" type="checkbox" ${isDisabled ? 'disabled' : ''}>
+      <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${point.id || ''}" type="checkbox" ${isDisabled ? 'disabled' : ''}>
       <div class="event__type-list">
         <fieldset class="event__type-group">
           <legend class="visually-hidden">
@@ -393,15 +393,15 @@ export default class PointEditView extends AbstractStatefulView {
       enableTime: true,
       dateFormat: 'd/m/y H:i',
       defaultDate: this._state.dateFrom,
-      onChange: this.#dateFromChangeHandler,
       maxDate: this._state.dateTo,
+      onChange: this.#dateFromChangeHandler,
     });
 
     this.#datepickerEnd = flatpickr(dateTo, {
       enableTime: true,
       dateFormat: 'd/m/y H:i',
       defaultDate: this._state.dateTo,
-      minDate: dayjs(this._state.dateFrom).add(1, 'minute').toDate(),
+      minDate: this._state.dateFrom,
       onChange: this.#dateToChangeHandler,
     });
   }
@@ -409,16 +409,23 @@ export default class PointEditView extends AbstractStatefulView {
   #dateFromChangeHandler = ([userDate]) => {
     this.updateElement({ dateFrom: userDate });
     this.#datepickerEnd.set('minDate', userDate);
-    if (new Date(this._state.dateTo) < userDate) {
-      this.updateElement({ dateTo: userDate });
-      this.#datepickerEnd.setDate(userDate);
+
+    const currentDateTo = new Date(this._state.dateTo);
+    const minValidDateTo = new Date(userDate.getTime() + 60000); // Добавляем 1 минуту
+
+    if (currentDateTo < minValidDateTo) {
+      this.updateElement({ dateTo: minValidDateTo });
+      this.#datepickerEnd.setDate(minValidDateTo);
     }
   };
 
   #dateToChangeHandler = ([userDate]) => {
-    if (new Date(userDate) < new Date(this._state.dateFrom)) {
-      this.#datepickerEnd.setDate(this._state.dateFrom);
-      this.updateElement({ dateTo: this._state.dateFrom });
+    const currentDateFrom = new Date(this._state.dateFrom);
+    const minValidDateTo = new Date(currentDateFrom.getTime() + 60000); // Требуемая минимальная dateTo
+
+    if (userDate < minValidDateTo) {
+      this.updateElement({ dateTo: minValidDateTo });
+      this.#datepickerEnd.setDate(minValidDateTo);
       return;
     }
     this.updateElement({ dateTo: userDate });
