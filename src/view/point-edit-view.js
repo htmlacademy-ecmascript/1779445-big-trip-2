@@ -24,13 +24,13 @@ function createEventTypeButtonTemplate(point, type, isDisabled) {
 
   return (
     `<div class="event__type-wrapper">
-      <label class="event__type  event__type-btn" for="event-type-toggle-${point.id}">
+      <label class="event__type  event__type-btn" for="event-type-toggle">
         <span class="visually-hidden">
           Choose event type
         </span>
         <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
       </label>
-      <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${point.id}" type="checkbox" ${isDisabled ? 'disabled' : ''}>
+      <input class="event__type-toggle  visually-hidden" id="event-type-toggle" type="checkbox" ${isDisabled ? 'disabled' : ''}>
       <div class="event__type-list">
         <fieldset class="event__type-group">
           <legend class="visually-hidden">
@@ -219,6 +219,7 @@ function createEditFormTemplate(point, destination, offers, isDisabled, isSaving
 export default class PointEditView extends AbstractStatefulView {
   #handleFormSubmit = null;
   #handleDeleteClick = null;
+  #handleClickRollUp = null;
   #destination = null;
   #offers = null;
   #isDisabled = null;
@@ -235,6 +236,7 @@ export default class PointEditView extends AbstractStatefulView {
     offers,
     onFormSubmit,
     onDeleteClick,
+    onRollUpClick,
     isDisabled = false,
     isSaving = false,
     isDeleting = false
@@ -264,6 +266,7 @@ export default class PointEditView extends AbstractStatefulView {
 
     this.#handleFormSubmit = onFormSubmit;
     this.#handleDeleteClick = onDeleteClick;
+    this.#handleClickRollUp = onRollUpClick;
     this.#destination = destination;
     this.#offers = offers;
     this.#isDisabled = isDisabled;
@@ -362,7 +365,9 @@ export default class PointEditView extends AbstractStatefulView {
     evt.preventDefault();
     if(evt.target.className === 'event__reset-btn' || this.#isNewPoint){
       this.#handleDeleteClick();
-    } else {
+    } else if(evt.target.className === 'event__rollup-btn'){
+      this.#handleClickRollUp();
+    }else {
       this.reset(this.#initialState);
       this.#handleFormSubmit(PointEditView.parseStateToPoint(this.#initialState));
     }

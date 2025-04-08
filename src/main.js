@@ -10,7 +10,7 @@ import { generateRandomToken } from './utils/common.js';
 const AUTH_TOKEN = generateRandomToken();
 
 const AUTHORIZATION = `Basic ${AUTH_TOKEN}`;
-const END_POINT = 'https://22.objects.htmlacademy.pro/big-trip';
+const END_POINT = 'https://23.objects.htmlacademy.pro/big-trip';
 
 const headerElement = document.querySelector('.trip-main');
 const mainElement = document.querySelector('.trip-events');

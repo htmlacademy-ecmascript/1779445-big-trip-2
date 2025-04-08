@@ -47,6 +47,7 @@ export default class PointPresenter {
       offers: this.#offers,
       onFormSubmit: this.#handleFormSumbmit,
       onDeleteClick: this.#handleDeleteClick,
+      onRollUpClick: this.#handleClickRollUp,
     });
 
     if (prevPointComponent === null || prevPointEditComponent === null) {
@@ -175,7 +176,10 @@ export default class PointPresenter {
     } catch {
       this.#pointEditComponent.setSaving(false);
     }
+  };
 
+  #handleClickRollUp = () => {
+    this.#replaceFormToCard();
   };
 }
 
