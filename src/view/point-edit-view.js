@@ -332,7 +332,6 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
-    // this.element.querySelectorAll('.event__offer-checkbox').forEach((offer) => offer.addEventListener('change', this.#offerChangeHandler));
     this.element.querySelectorAll('.event__offer-label').forEach((label) => {
       label.addEventListener('click', this.#offerLabelClickHandler);
     });
@@ -354,11 +353,7 @@ export default class PointEditView extends AbstractStatefulView {
     const updatedOffers = this._state.offers.includes(offerId)
       ? this._state.offers.filter((id) => id !== offerId)
       : [...this._state.offers, offerId];
-
-    this.updateElement({
-      ...this._state,
-      offers: updatedOffers
-    });
+    this._state.offers = updatedOffers;
   };
 
   #deleteHandler = (evt) => {
@@ -407,48 +402,33 @@ export default class PointEditView extends AbstractStatefulView {
   }
 
   #dateFromChangeHandler = ([userDate]) => {
-    this.updateElement({ dateFrom: userDate });
+    this._state.dateFrom = userDate;
+    // this.updateElement({ dateFrom: userDate });
     this.#datepickerEnd.set('minDate', userDate);
 
     const currentDateTo = new Date(this._state.dateTo);
     const minValidDateTo = new Date(userDate.getTime() + 60000); // Добавляем 1 минуту
 
     if (currentDateTo < minValidDateTo) {
-      this.updateElement({ dateTo: minValidDateTo });
+      this._state.dateFrom = minValidDateTo;
+      // this.updateElement({ dateTo: minValidDateTo });
       this.#datepickerEnd.setDate(minValidDateTo);
     }
   };
 
   #dateToChangeHandler = ([userDate]) => {
-    const currentDateFrom = new Date(this._state.dateFrom);
+    const currentDateFrom = new Date(userDate);
     const minValidDateTo = new Date(currentDateFrom.getTime() + 60000); // Требуемая минимальная dateTo
 
     if (userDate < minValidDateTo) {
-      this.updateElement({ dateTo: minValidDateTo });
+      this._state.dateTo = minValidDateTo;
+      // this.updateElement({ dateTo: minValidDateTo });
       this.#datepickerEnd.setDate(minValidDateTo);
       return;
     }
-    this.updateElement({ dateTo: userDate });
+    this._state.dateTo = minValidDateTo;
+    // this.updateElement({ dateTo: userDate });
   };
-
-  // #offerChangeHandler = (evt) => {
-  //   const offerId = evt.target.dataset.offerId;
-  //   console.log(evt.target);
-
-
-  //   if (!offerId) {
-  //     return;
-  //   }
-
-  //   const updatedOffers = this._state.offers.includes(offerId)
-  //     ? this._state.offers.filter((id) => id !== offerId)
-  //     : [...this._state.offers, offerId];
-
-  //   this.updateElement({
-  //     ...this._state,
-  //     offers: updatedOffers
-  //   });
-  // };
 
   #findDestination = (evt) => {
     const cityName = evt.target.value;
@@ -457,15 +437,15 @@ export default class PointEditView extends AbstractStatefulView {
 
   #priceChangeHandler = (evt) => {
     const numericValue = Number(evt.target.value);
-    this.updateElement({
-      ...this._state,
-      basePrice: isNaN(numericValue) ? 0 : numericValue
-    });
+    this._state.basePrice = isNaN(numericValue) ? 0 : numericValue;
+    // this.updateElement({
+    //   ...this._state,
+    //   basePrice: isNaN(numericValue) ? 0 : numericValue
+    // });
   };
 
   #typeChangeHandler = (evt) => {
     const newType = evt.target.value;
-
     this.updateElement({
       ...this._state,
       type: newType,
