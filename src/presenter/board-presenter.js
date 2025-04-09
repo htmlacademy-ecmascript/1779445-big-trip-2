@@ -8,9 +8,9 @@ import TripInfoView from '../view/trip-info-view.js';
 import PointListView from '../view/point-list-view.js';
 import PointPresenter from './point-presenter.js';
 import NoPointsView from '../view/no-points-view.js';
-import NewPointPresenter from './new-points-presenter.js';
+import NewPointPresenter from './new-point-presenter.js';
 import LoadingView from '../view/loading-view.js';
-import FailedLoadView from '../view/failed-load-data-view.js';
+import FailedLoadView from '../view/failed-load-view.js';
 
 
 const { AFTERBEGIN, BEFOREEND, AFTEREND } = RenderPosition;
@@ -116,7 +116,7 @@ export default class BoardPresenter {
 
     const getCityName = (point) => {
       if (!point || !point.destination) {
-        return 'Unknown'; // Если destination не определен, возвращаем 'Unknown'
+        return 'Unknown';
       }
 
       const dest = destinations.find((d) => d.id === point.destination);
@@ -132,12 +132,12 @@ export default class BoardPresenter {
     };
 
     const getSumAllTrip = () => {
-      // Суммируем базовые цены
+
       const sumOfBasePrice = sortedPoints
         .map((item) => item.basePrice)
         .reduce((sum, value) => sum + value, 0);
 
-      // Получаем только непустые массивы offers
+
       const selectedOffers = sortedPoints.flatMap((item) => item.offers);
       const allAvailbleOffers = offers.flatMap((item) => item.offers);
       const sumOfOffers = selectedOffers.reduce((sum, value) => sum + allAvailbleOffers.find((item) => item.id === value).price, 0);
@@ -210,7 +210,6 @@ export default class BoardPresenter {
         }
         break;
 
-
       case UserAction.DELETE_POINT: {
         const presenter = this.#pointPresenters.get(update.id);
         presenter.setDeleting();
@@ -243,7 +242,6 @@ export default class BoardPresenter {
     this.#sortType = sortType;
     this.#renderAllPoints();
   };
-
 
   #handleModelEvent = (updateType, data) => {
     if (data?.isFilterChange) {
@@ -278,14 +276,10 @@ export default class BoardPresenter {
 
       case UpdateType.INIT:
         this.#isLoading = false;
-
-        // Новый код: обработка ошибки
         this.#hasError = data?.error ?? false;
-
         if (!this.#hasError) {
           this.#boardPoints = this.points;
         }
-
         remove(this.#loadingComponent);
         this.#renderBoard();
         break;
