@@ -110,8 +110,8 @@ export default class BoardPresenter {
   }
 
   getDestinationTrip(points, destinations, offers) {
-    const sortedPoints = [...points].sort((a, b) =>
-      new Date(a.dateFrom) - new Date(b.dateFrom)
+    const sortedPoints = [...points].sort((earlierPoint, laterPoint) =>
+      new Date(earlierPoint.dateFrom) - new Date(laterPoint.dateFrom)
     );
 
     const getCityName = (point) => {
@@ -119,7 +119,7 @@ export default class BoardPresenter {
         return 'Unknown';
       }
 
-      const dest = destinations.find((d) => d.id === point.destination);
+      const dest = destinations.find((destinationItem) => destinationItem.id === point.destination);
       return dest?.name || 'Unknown';
     };
 

@@ -4,8 +4,8 @@ import { FILTERS } from '../utils/filter.js';
 function createFilterTemplate(filterPoints, currentFilter) {
 
   function getEmptyFilter(item) {
-    const element = filterPoints.find((filter) => filter.type === item);
-    return element ? element.points.length === 0 : true;
+    const filterElement = filterPoints.find((filter) => filter.type === item);
+    return filterElement ? filterElement.points.length === 0 : true;
   }
 
   function getFilterElement() {
@@ -53,12 +53,12 @@ export default class FilterView extends AbstractView{
   }
 
   #filterTypeChangeHandler(evt) {
-    const element = evt.target.parentElement.querySelector('.trip-filters__filter-input');
+    const filterElement = evt.target.parentElement.querySelector('.trip-filters__filter-input');
 
-    if (element.disabled || evt.target.tagName !== 'LABEL') {
+    if (filterElement.disabled || evt.target.tagName !== 'LABEL') {
       return;
     }
-    element.checked = true;
+    filterElement.checked = true;
     evt.preventDefault();
     this.#handleFilterTypeChange(evt.target.dataset.filterType);
   }

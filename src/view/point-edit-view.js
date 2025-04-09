@@ -76,7 +76,7 @@ function createDestinationTemplate(point, type, destinations, isDisabled) {
 }
 
 // Получаем и возвращаем template для выбора даты
-function createDateFromToTemplate(dateFrom, dateTo, point, isDisabled) {
+function createDateFromToTemplate(dateFrom, dateTo, isDisabled) {
   return(
     `<div class="event__field-group  event__field-group--time">
       <label class="visually-hidden" for="event-start-time-1">
