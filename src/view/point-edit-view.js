@@ -10,10 +10,10 @@ dayjs.extend(utc);
 
 // Возвращаем template для выбора типа маршрута
 function createEventTypeButtonTemplate(point, type, isDisabled) {
-  const value = Object.values(EventType);
+  const eventTypeValues = Object.values(EventType);
 
   function getTypeOfEvent() {
-    return value.map((item) =>
+    return eventTypeValues.map((item) =>
       `<div class="event__type-item">
         <input id="event-type-${item}-${point.id}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${item}">
         <label class="event__type-label  event__type-label--${item}" for="event-type-${item}-${point.id}">
@@ -44,31 +44,31 @@ function createEventTypeButtonTemplate(point, type, isDisabled) {
 }
 
 // Получаем и возвращаем template для выбора города
-function createDestinationTemplate(point, type, destination, isDisabled) {
+function createDestinationTemplate(point, type, destinations, isDisabled) {
 
-  const destinationElement = destination.find((item) => (item.id === point.destination) || '');
+  const destinationsElement = destinations.find((item) => (item.id === point.destination) || '');
 
-  const allCity = destination.map((item) => item.name);
+  const allAvailableCities = destinations.map((item) => item.name);
 
   function getDestinationCity() {
-    const value = allCity.map((item) => `<option value="${item}">${item}</option>`).join('');
-    return value;
+    const cityValues = allAvailableCities.map((item) => `<option value="${item}">${item}</option>`).join('');
+    return cityValues;
   }
   return(
     `<div class="event__field-group  event__field-group--destination">
-      <label class="event__label  event__type-output" for="event-destination-${destinationElement?.id || ''}">
+      <label class="event__label  event__type-output" for="event-destination-${destinationsElement?.id || ''}">
         ${type}
       </label>
       <input class="event__input  event__input--destination"
-      id="event-destination-${destinationElement?.id || ''}}"
+      id="event-destination-${destinationsElement?.id || ''}}"
       type="text"
       name="event-destination"
-      value="${destinationElement?.name || ''}"
-      list="destination-list-${destinationElement?.id || ''}}"
+      value="${destinationsElement?.name || ''}"
+      list="destination-list-${destinationsElement?.id || ''}}"
       ${isDisabled ? 'disabled' : ''}
       required
       >
-      <datalist id="destination-list-${destinationElement?.id || ''}}">
+      <datalist id="destination-list-${destinationsElement?.id || ''}}">
         ${getDestinationCity()}
       </datalist>
     </div>`
@@ -151,8 +151,8 @@ function createPhotoTemplate(pictures){
   }
 
   function getPhotos() {
-    const arrayPic = pictures.map((pic) => `<img class="event__photo" src="${pic.src}" alt="${pic.description}">`);
-    return arrayPic;
+    const pictureTemplates = pictures.map((picture) => `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`);
+    return pictureTemplates;
   }
   return `
     <div class="event__photos-container">
@@ -403,7 +403,6 @@ export default class PointEditView extends AbstractStatefulView {
 
   #dateFromChangeHandler = ([userDate]) => {
     this._state.dateFrom = userDate;
-    // this.updateElement({ dateFrom: userDate });
     this.#datepickerEnd.set('minDate', userDate);
 
     const currentDateTo = new Date(this._state.dateTo);
@@ -411,7 +410,6 @@ export default class PointEditView extends AbstractStatefulView {
 
     if (currentDateTo < minValidDateTo) {
       this._state.dateFrom = minValidDateTo;
-      // this.updateElement({ dateTo: minValidDateTo });
       this.#datepickerEnd.setDate(minValidDateTo);
     }
   };
@@ -422,12 +420,10 @@ export default class PointEditView extends AbstractStatefulView {
 
     if (userDate < minValidDateTo) {
       this._state.dateTo = minValidDateTo;
-      // this.updateElement({ dateTo: minValidDateTo });
       this.#datepickerEnd.setDate(minValidDateTo);
       return;
     }
     this._state.dateTo = minValidDateTo;
-    // this.updateElement({ dateTo: userDate });
   };
 
   #findDestination = (evt) => {
@@ -438,10 +434,6 @@ export default class PointEditView extends AbstractStatefulView {
   #priceChangeHandler = (evt) => {
     const numericValue = Number(evt.target.value);
     this._state.basePrice = isNaN(numericValue) ? 0 : numericValue;
-    // this.updateElement({
-    //   ...this._state,
-    //   basePrice: isNaN(numericValue) ? 0 : numericValue
-    // });
   };
 
   #typeChangeHandler = (evt) => {
