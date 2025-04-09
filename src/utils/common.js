@@ -15,11 +15,11 @@ function getDiffTime(dateFromvalue, dateTovalue) {
   const dateTo = dayjs(`${dateTovalue.replace(/\.\d+Z$/, '')}Z`);
 
 
-  const diffMilliseconds = dateTo.diff(dateFrom);
-  const diff = dayjs.duration(diffMilliseconds);
+  const differentMilliseconds = dateTo.diff(dateFrom);
+  const different = dayjs.duration(differentMilliseconds);
 
-  const totalMinutes = Math.floor(diff.asMinutes());
-  const totalDays = Math.floor(diff.asDays());
+  const totalMinutes = Math.floor(different.asMinutes());
+  const totalDays = Math.floor(different.asDays());
 
   const days = totalDays;
   const hours = Math.floor((totalMinutes - days * 24 * 60) / 60);

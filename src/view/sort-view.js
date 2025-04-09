@@ -13,9 +13,9 @@ function createSortTemplate(all){
   }
 
   function getSortElement() {
-    const values = Object.values(TripSort);
+    const tripSortValues = Object.values(TripSort);
 
-    return values.map((item) => {
+    return tripSortValues.map((item) => {
       item = item.replace('sort-', '');
 
       return `<div class="trip-sort__item  trip-sort__item--${item}">
