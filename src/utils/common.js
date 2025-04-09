@@ -3,6 +3,7 @@ import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
+// Функция для получения форматирования даты
 function getDateFormat(dueDate, format) {
   const date = dueDate ? dayjs(dueDate).format(format) : '';
   return date;
@@ -36,6 +37,7 @@ function getDiffTime(dateFromvalue, dateTovalue) {
   return result.trim();
 }
 
+// Функция для получения рандомного токена
 const generateRandomToken = () => {
   const authorizationToken = Math.random().toString(36).substring(2, 15) +
                       Math.random().toString(36).substring(2, 15);
