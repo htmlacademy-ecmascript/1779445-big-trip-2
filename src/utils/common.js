@@ -14,8 +14,8 @@ function getDiffTime(dateFromvalue, dateTovalue) {
   const dateTo = dayjs(`${dateTovalue.replace(/\.\d+Z$/, '')}Z`);
 
 
-  const diffMs = dateTo.diff(dateFrom);
-  const diff = dayjs.duration(diffMs);
+  const diffMilliseconds = dateTo.diff(dateFrom);
+  const diff = dayjs.duration(diffMilliseconds);
 
   const totalMinutes = Math.floor(diff.asMinutes());
   const totalDays = Math.floor(diff.asDays());
